@@ -9,22 +9,34 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
+    public function up()
     {
-        Schema::create('jadwal_kajian_ustadz', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('jadwal_kajian_id')->constrained('jadwal_kajians')->onDelete('cascade');
-            $table->foreignId('ustadz_id')->constrained('ustadzs')->onDelete('cascade');
-            $table->timestamps();
+        // Drop foreign key constraint dari kajian_rekamans table
+        Schema::table('kajian_rekamans', function (Blueprint $table) {
+            $table->dropForeign(['ustadz_id']);
+            $table->dropColumn('ustadz_id');
         });
 
+        // Buat table pivot untuk kajian_rekaman dan ustadz
+        Schema::create('kajian_rekaman_ustadz', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('kajian_rekaman_id')->constrained('kajian_rekamans')->onDelete('cascade');
+            $table->foreignId('ustadz_id')->constrained('ustadzs')->onDelete('cascade');
+            $table->timestamps();
+            
+            // Mencegah duplikasi relasi yang sama
+            $table->unique(['kajian_rekaman_id', 'ustadz_id']);
+        });
     }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
+    public function down()
     {
-        Schema::dropIfExists('jadwal_kajian_ustadzs');
+        // Drop table pivot
+        Schema::dropIfExists('kajian_rekaman_ustadz');
+
+        // Tambahkan kembali kolom ustadz_id ke kajian_rekamans
+        Schema::table('kajian_rekamans', function (Blueprint $table) {
+            $table->foreignId('ustadz_id')->nullable()->constrained('ustadzs')->onDelete('set null');
+        });
     }
 };

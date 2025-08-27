@@ -30,6 +30,10 @@
                     colors="indigo">Banner</x-fragments.sidebar-item>
                 <x-fragments.sidebar-item route="donasi.index" icon="hand-holding-dollar"
                     colors="indigo">Donasi</x-fragments.sidebar-item>
+                <x-fragments.sidebar-item route="kajian-rekaman.index" icon="circle-play" colors="indigo">Rekaman
+                    Kajian</x-fragments.sidebar-item>
+                <x-fragments.sidebar-item route="symuslim.index" icon="layer-group"
+                    colors="indigo">SyMuslim</x-fragments.sidebar-item>
             </ul>
         </div>
     </aside>

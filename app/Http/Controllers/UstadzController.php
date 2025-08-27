@@ -14,6 +14,45 @@ class UstadzController extends Controller
         return view('dashboard.ustadz', compact('data'));
     }
 
+    public function getAllUstadz()
+    {
+        try {
+            $ustadz = Ustadz::withCount(['kajianRekamans', 'jadwalKajians'])
+                ->select('id', 'nama_lengkap', 'alamat', 'riwayat_pendidikan', 'youtube', 'instagram', 'tiktok')
+                ->get()
+                ->map(function($item) {
+                    return [
+                        'id' => $item->id,
+                        'nama_lengkap' => $item->nama_lengkap,
+                        'alamat' => $item->alamat,
+                        'riwayat_pendidikan' => $item->riwayat_pendidikan,
+                        'social_media' => [
+                            'youtube' => $item->youtube,
+                            'instagram' => $item->instagram,
+                            'tiktok' => $item->tiktok
+                        ],
+                        'statistics' => [
+                            'total_kajian_rekaman' => $item->kajian_rekamans_count,
+                            'total_jadwal_kajian' => $item->jadwal_kajians_count
+                        ]
+                    ];
+                });
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Data ustadz berhasil diambil',
+                'data' => $ustadz
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Terjadi kesalahan saat mengambil data ustadz',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
     public function store(Request $request)
     {
         $request->validate([

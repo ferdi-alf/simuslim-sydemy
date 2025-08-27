@@ -350,9 +350,6 @@
             </x-fragments.form-modal>
         @endforeach
     @endforeach
-
-
-
     <div class="p-3 rounded-lg bg-white/25 shadow-lg backdrop-blur-3xl">
         <div class="flex justify-end mb-4">
             <x-fragments.modal-button target="add-kajian-modal" variant="indigo">
@@ -629,9 +626,8 @@
             </div>
         </div>
     </div>
-
     @foreach ($kajians as $kajian)
-        {{-- Modal untuk Poster --}}
+
         <x-modal-layout id="poster-modal-{{ $kajian->id }}" title="Poster Kajian: {{ $kajian->judul }}"
             :closable="true">
             <div class="text-center w-full">
@@ -651,7 +647,13 @@
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     <script>
-        // File upload handler
+        function openAddJadwalModal(kajianId) {
+            document.getElementById('jadwal-kajian-id').value = kajianId;
+            const modal = document.getElementById('add-jadwal-modal');
+            const backdrop = modal.querySelector('.modal-backdrop') || modal;
+            backdrop.classList.remove('hidden');
+        }
+
         function fileUpload() {
             return {
                 isDragging: false,
@@ -685,29 +687,17 @@
             }
         }
 
-        // Function to open add jadwal modal with kajian_id
-        function openAddJadwalModal(kajianId) {
-            document.getElementById('jadwal-kajian-id').value = kajianId;
-            const modal = document.getElementById('add-jadwal-modal');
-            const backdrop = modal.querySelector('.modal-backdrop') || modal;
-            backdrop.classList.remove('hidden');
-        }
 
-        // Function to open edit jadwal modal
+
         function openEditJadwalModal(jadwalId, jadwalData) {
-            // Set form action
             const form = document.querySelector('#edit-jadwal-modal form');
             form.action = `{{ url('kajian/jadwal') }}/${jadwalId}`;
-
-            // Populate form fields
             document.querySelector('#edit-jadwal-modal input[name="tanggal"]').value = jadwalData.tanggal;
             document.querySelector('#edit-jadwal-modal select[name="hari"]').value = jadwalData.hari;
             document.querySelector('#edit-jadwal-modal input[name="jam_mulai"]').value = jadwalData.jam_mulai;
             document.querySelector('#edit-jadwal-modal input[name="jam_selesai"]').value = jadwalData.jam_selesai;
             document.querySelector('#edit-jadwal-modal select[name="status"]').value = jadwalData.status;
             document.querySelector('#edit-jadwal-modal select[name="diperuntukan"]').value = jadwalData.diperuntukan;
-
-            // Open modal
             const modal = document.getElementById('edit-jadwal-modal');
             const backdrop = modal.querySelector('.modal-backdrop') || modal;
             backdrop.classList.remove('hidden');

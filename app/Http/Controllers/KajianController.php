@@ -32,6 +32,112 @@ class KajianController extends Controller
         return view('dashboard.kajian', compact('kajians', 'masjids', 'ustadzOptions'));
     }
 
+    public function getAllKajianPosters()
+    {
+        try {
+            $kajianPosters = KajianPoster::with([
+                'masjid:id,nama,alamat',
+                'jadwalKajians' => function($query) {
+                    $query->with(['ustadzs:id,nama_lengkap'])
+                        ->select('id', 'kajian_id', 'jam_mulai', 'jam_selesai', 'tanggal', 'hari', 'status', 'diperuntukan');
+                }
+            ])
+            ->select('id', 'masjid_id', 'judul', 'poster', 'deskripsi')
+            ->get()
+            ->map(function($kajian) {
+                return [
+                    'id' => $kajian->id,
+                    'judul' => $kajian->judul,
+                    'deskripsi' => $kajian->deskripsi,
+                    'poster_url' => $kajian->poster ? asset('uploads/kajian-poster/' . $kajian->poster) : null,
+                    'masjid' => [
+                        'id' => $kajian->masjid->id ?? null,
+                        'nama' => $kajian->masjid->nama ?? null,
+                        'alamat' => $kajian->masjid->alamat ?? null
+                    ],
+                    'total_jadwal' => $kajian->jadwalKajians->count(),
+                    'jadwal_kajian' => $kajian->jadwalKajians->map(function($jadwal) {
+                        return [
+                            'id' => $jadwal->id,
+                            'jam_mulai' => $jadwal->jam_mulai,
+                            'jam_selesai' => $jadwal->jam_selesai,
+                            'tanggal' => $jadwal->tanggal,
+                            'hari' => $jadwal->hari,
+                            'status' => $jadwal->status,
+                            'diperuntukan' => $jadwal->diperuntukan,
+                            'ustadz' => $jadwal->ustadzs->map(function($ustadz) {
+                                return [
+                                    'id' => $ustadz->id,
+                                    'nama_lengkap' => $ustadz->nama_lengkap
+                                ];
+                            })
+                        ];
+                    })
+                ];
+            });
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Data kajian poster berhasil diambil',
+                'data' => $kajianPosters
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Terjadi kesalahan saat mengambil data kajian poster',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // Method untuk get jadwal kajian saja
+    public function getAllJadwalKajian()
+    {
+        try {
+            $jadwalKajian = JadwalKajian::with([
+                'kajian:id,judul,poster',
+                'ustadzs:id,nama_lengkap'
+            ])
+            ->select('id', 'kajian_id', 'jam_mulai', 'jam_selesai', 'tanggal', 'hari', 'status', 'diperuntukan')
+            ->get()
+            ->map(function($jadwal) {
+                return [
+                    'id' => $jadwal->id,
+                    'jam_mulai' => $jadwal->jam_mulai,
+                    'jam_selesai' => $jadwal->jam_selesai,
+                    'tanggal' => $jadwal->tanggal,
+                    'hari' => $jadwal->hari,
+                    'status' => $jadwal->status,
+                    'diperuntukan' => $jadwal->diperuntukan,
+                    'kajian_poster' => [
+                        'id' => $jadwal->kajian->id ?? null,
+                        'judul' => $jadwal->kajian->judul ?? null,
+                        'poster_url' => $jadwal->kajian->poster ? asset('uploads/kajian-poster/' . $jadwal->kajian->poster) : null
+                    ],
+                    'ustadz' => $jadwal->ustadzs->map(function($ustadz) {
+                        return [
+                            'id' => $ustadz->id,
+                            'nama_lengkap' => $ustadz->nama_lengkap
+                        ];
+                    })
+                ];
+            });
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Data jadwal kajian berhasil diambil',
+                'data' => $jadwalKajian
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Terjadi kesalahan saat mengambil data jadwal kajian',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
     public function store(Request $request) {
         $request->validate([
             'judul' => 'required|string|max:255',

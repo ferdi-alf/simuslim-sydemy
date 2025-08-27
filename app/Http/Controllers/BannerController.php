@@ -15,6 +15,50 @@ class BannerController extends Controller
         $banners = Banner::all();
         return view('dashboard.banner', ['data' => $banners]);
     }
+
+    public function getAllBanners()
+    {
+        try {
+            $banners = Banner::select('id', 'banners', 'judul', 'kategori')
+                ->get()
+                ->map(function($banner) {
+                    return [
+                        'id' => $banner->id,
+                        'judul' => $banner->judul,
+                        'kategori' => $banner->kategori,
+                        'banner_url' => $banner->banners ? asset('uploads/banners/' . $banner->banners) : asset('images/default-banner.jpg'),
+                        'banner_html' => $banner->getBannerHtmlAttribute(),
+                        'initials' => $this->generateInitials($banner->judul)
+                    ];
+                });
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Data banner berhasil diambil',
+                'data' => $banners
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Terjadi kesalahan saat mengambil data banner',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    private function generateInitials($title)
+    {
+        $parts = explode(' ', trim($title));
+        $initials = '';
+        foreach ($parts as $part) {
+            if (!empty($part)) {
+                $initials .= strtoupper(substr($part, 0, 1));
+            }
+            if (strlen($initials) >= 2) break;
+        }
+        return empty($initials) ? 'B' : $initials;
+    }
+
     
     public function store(Request $request)
     {

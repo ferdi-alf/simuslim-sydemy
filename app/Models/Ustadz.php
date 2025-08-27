@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Ustadz extends Model
 {
@@ -18,9 +18,9 @@ class Ustadz extends Model
         'tiktok',
     ];
 
-    public function kajianRekaman()
+    public function kajianRekamans()
     {
-        return $this->hasMany(KajianRekaman::class);
+        return $this->belongsToMany(KajianRekaman::class, 'kajian_rekaman_ustadz');
     }
 
     public function jadwalKajians()

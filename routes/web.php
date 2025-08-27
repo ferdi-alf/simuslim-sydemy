@@ -5,7 +5,9 @@ use App\Http\Controllers\BannerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DonasiController;
 use App\Http\Controllers\KajianController;
+use App\Http\Controllers\KajianRekamanController;
 use App\Http\Controllers\MasjidController;
+use App\Http\Controllers\SymuslimController;
 use App\Http\Controllers\UstadzController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -37,6 +39,24 @@ Route::middleware(['auth'])->group(function() {
             Route::put('/{id}', 'update')->name('update');
             Route::delete('/{id}', 'destroy')->name('destroy');
         });
+
+     Route::controller(KajianRekamanController::class)->prefix('kajian-rekaman')->name('kajian-rekaman.')->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::post('/', 'store')->name('store');
+            Route::put('/{id}', 'update')->name('update');
+            Route::delete('/{id}', 'destroy')->name('destroy');
+        });
+
+
+    Route::controller(SymuslimController::class)->prefix('symuslim')->name('symuslim.')->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::post('/', 'store')->name('store');
+        Route::put('/{id}', 'update')->name('update');
+        Route::delete('/{id}', 'destroy')->name('destroy');
+        Route::post('/{bacaanId}/detail', 'storeDetail')->name('store-detail');
+        Route::put('/{bacaanId}/detail/{detailId}', 'updateDetail')->name('update-detail');
+        Route::delete('/{bacaanId}/detail/{detailId}', 'destroyDetail')->name('destroy-detail');
+    });
 
      Route::controller(DonasiController::class)->prefix('donasi')->name('donasi.')->group(function () {
             Route::get('/', 'index')->name('index');

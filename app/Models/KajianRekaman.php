@@ -1,24 +1,25 @@
 <?php
 
+// KajianRekaman Model
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class KajianRekaman extends Model
 {
+    protected $table = "kajian_rekamans";
     use HasFactory;
 
     protected $fillable = [
         'judul',
         'kitab',
-        'ustadz_id',
         'kategori',
         'link',
     ];
 
-    public function ustadz()
+    public function ustadzs()
     {
-        return $this->belongsTo(Ustadz::class);
+        return $this->belongsToMany(Ustadz::class, 'kajian_rekaman_ustadz');
     }
 }

@@ -1,9 +1,8 @@
-```html
 @extends('layouts.dashboard-layouts')
 
 @section('content')
     <x-fragments.form-modal id="add-donasi-modal" title="Tambah Donasi" action="{{ route('donasi.store') }}">
-        <div class="grid grid-cols-2 gap-x-2">
+        <div class="grid grid-cols-2 space-x-2">
             <div class="col-span-2">
                 <div x-data="fileUpload()"
                     class="border-2 border-dashed border-gray-300 rounded-lg p-5 text-center hover:border-blue-400 transition-colors"
@@ -151,7 +150,7 @@
                 <x-fragments.text-field label="Judul" name="judul" :value="$donasi->judul" required />
                 <x-fragments.text-field label="Nama PIC" name="nama_pic" :value="$donasi->nama_pic" required />
                 <x-fragments.text-field label="Keperluan" name="keperluan" :value="$donasi->keperluan" required />
-                <x-fragments.currency-field label="Nominal" name="nominal" :value="$donasi->nominal" />
+                <x-fragments.currency-field label="Nominal" name="nominal" :value="number_format($donasi->nominal, 0, '', '')" />
                 <div class="col-span-2">
                     <x-fragments.text-field label="No Rekening" name="no_rekening" :value="$donasi->no_rekening" required />
                 </div>
@@ -205,4 +204,3 @@
         }
     </script>
 @endsection
-```
