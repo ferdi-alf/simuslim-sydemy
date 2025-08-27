@@ -9,7 +9,7 @@
                         <div class="w-full text-center space-x-1.5">
 
                             <h1
-                                class="font-extrabold text-center sm:text-3xl text-2xl text-transparent bg-clip-text bg-gradient-to-br from-teal-300 via-emerald-300 to-emerald-400">
+                                class="font-extrabold text-center sm:text-3xl text-2xl text-transparent bg-clip-text bg-gradient-to-br from-indigo-300 via-emerald-300 to-emerald-400">
                                 Simuslim Sydemy</h1>
                         </div>
 
@@ -30,7 +30,7 @@
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center">
                                     <input id="remember-me" name="remember" type="checkbox"
-                                        class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"
+                                        class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                                         {{ old('remember') ? 'checked' : '' }} />
                                     <label for="remember-me" class="ml-2 block text-sm text-gray-900">
                                         Remember me
