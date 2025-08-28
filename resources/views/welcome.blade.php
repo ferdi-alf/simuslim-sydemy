@@ -9,8 +9,8 @@
                         <div class="w-full text-center space-x-1.5">
 
                             <h1
-                                class="font-extrabold text-center sm:text-3xl text-2xl text-transparent bg-clip-text bg-gradient-to-br from-indigo-300 via-emerald-300 to-emerald-400">
-                                Simuslim Sydemy</h1>
+                                class="font-extrabold text-center sm:text-3xl text-2xl text-transparent bg-clip-text bg-gradient-to-br from-indigo-400 via-indigo-500 to-indigo-400">
+                                SyMuslim</h1>
                         </div>
 
 
@@ -40,7 +40,7 @@
 
 
 
-                            <x-fragments.gradient-button type="submit" id="submit-btn">
+                            <x-fragments.gradient-button type="submit" color="indigo" id="submit-btn">
                                 Submit
                             </x-fragments.gradient-button>
                         </form>

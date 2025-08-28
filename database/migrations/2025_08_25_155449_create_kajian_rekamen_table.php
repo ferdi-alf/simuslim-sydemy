@@ -28,6 +28,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('kajian_rekamen');
+        Schema::dropIfExists('kajian_rekamans');
     }
+
 };
