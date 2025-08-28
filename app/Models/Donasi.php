@@ -17,6 +17,8 @@ class Donasi extends Model
         'nominal',
         'no_rekening',
         'keterangan',
+        'nama_pemilik_rekening',
+        'bank'
     ];
 
      public function getPosterHtmlAttribute()

@@ -56,8 +56,10 @@
             <x-fragments.text-field label="Nama PIC" name="nama_pic" required />
             <x-fragments.text-field label="Keperluan" name="keperluan" required />
             <x-fragments.currency-field label="Nominal" name="nominal" />
+            <x-fragments.text-field label="No Rekening" name="no_rekening" required />
+            <x-fragments.text-field label="bank" name="bank" placeholder="Mandiri, BCA, BRI, DLL" required />
             <div class="col-span-2">
-                <x-fragments.text-field label="No Rekening" name="no_rekening" required />
+                <x-fragments.text-field label="Nama Pemilik Rekening" name="nama_pemilik_rekening" required />
             </div>
             <div class="col-span-2">
                 <textarea name="keterangan" rows="2"
@@ -77,7 +79,18 @@
 
         <div class="mt-6">
             <h2 class="text-lg font-semibold mb-2">Data Donasi</h2>
-            <x-reusable-table :headers="['No', 'Poster', 'Judul', 'Nama PIC', 'Keperluan', 'Nominal', 'No Rekening', 'Keterangan']" :data="$data" :columns="[
+            <x-reusable-table :headers="[
+                'No',
+                'Poster',
+                'Judul',
+                'Nama PIC',
+                'Keperluan',
+                'Nominal',
+                'No Rekening',
+                'bank',
+                'nama pemilik',
+                'Keterangan',
+            ]" :data="$data" :columns="[
                 fn($row, $i) => $i + 1,
                 fn($row) => $row->poster_html,
                 fn($row) => $row->judul,
@@ -85,6 +98,8 @@
                 fn($row) => $row->keperluan,
                 fn($row) => 'Rp ' . number_format($row->nominal, 0, ',', '.'),
                 fn($row) => $row->no_rekening,
+                fn($row) => $row->bank,
+                fn($row) => $row->nama_pemilik_rekening,
                 fn($row) => $row->keterangan,
             ]" :showActions="true" :actionButtons="fn($row) => view('components.action-buttons', [
                 'modalId' => 'modal-update-donasi-' . $row->id,
@@ -151,8 +166,12 @@
                 <x-fragments.text-field label="Nama PIC" name="nama_pic" :value="$donasi->nama_pic" required />
                 <x-fragments.text-field label="Keperluan" name="keperluan" :value="$donasi->keperluan" required />
                 <x-fragments.currency-field label="Nominal" name="nominal" :value="number_format($donasi->nominal, 0, '', '')" />
+                <x-fragments.text-field label="No Rekening" name="no_rekening" :value="$donasi->no_rekening" required />
+                <x-fragments.text-field label="bank" name="bank" :value="$donasi->bank"
+                    placeholder="Mandiri, BCA, BRI, DLL" required />
                 <div class="col-span-2">
-                    <x-fragments.text-field label="No Rekening" name="no_rekening" :value="$donasi->no_rekening" required />
+                    <x-fragments.text-field label="Nama Pemilik Rekening" :value="$donasi->nama_pemilik_rekening" name="nama_pemilik_rekening"
+                        required />
                 </div>
                 <div class="col-span-2">
                     <textarea name="keterangan" rows="2"

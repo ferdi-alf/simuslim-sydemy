@@ -28,6 +28,8 @@ class DonasiController extends Controller
                         'judul' => $item->judul,
                         'nama_pic' => $item->nama_pic,
                         'keperluan' => $item->keperluan,
+                        'bank' => $item->bank,
+                        'nama_pemilik_rekening' => $item->nama_pemilik_rekening,
                         'nominal' => $item->nominal,
                         'formatted_nominal' => $item->getFormattedHargaAttribute(),
                         'no_rekening' => $item->no_rekening,
@@ -84,6 +86,8 @@ class DonasiController extends Controller
             'judul' => 'required|string|max:255',
             'poster' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             'nama_pic' => 'required|string|max:255',
+            'bank' => 'required|string|max:255',
+            'nama_pemilik_rekening' => 'required|string|max:255',
             'keperluan' => 'required|string|max:255',
             'nominal_numeric' => 'nullable|numeric|min:0', // Gunakan ini!
             'no_rekening' => 'required|string|max:255',
@@ -100,6 +104,8 @@ class DonasiController extends Controller
             'poster' => $posterFileName,
             'nama_pic' => $validated['nama_pic'],
             'keperluan' => $validated['keperluan'],
+            'nama_pemilik_rekening' => $validated['nama_pemilik_rekening'],
+            'bank' => $validated['bank'],
             'nominal' => $request->nominal_numeric, // Gunakan yang numeric!
             'no_rekening' => $validated['no_rekening'],
             'keterangan' => $validated['keterangan'],
@@ -138,6 +144,8 @@ class DonasiController extends Controller
             'poster' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'nama_pic' => 'required|string|max:255',
             'keperluan' => 'required|string|max:255',
+            'bank' => 'required|string|max:255',
+            'nama_pemilik_rekening' => 'required|string|max:255',
             'nominal' => 'nullable|string', // Validasi sebagai string
             'no_rekening' => 'required|string|max:255',
             'keterangan' => 'required|string',
@@ -155,6 +163,8 @@ class DonasiController extends Controller
             'judul' => $validated['judul'],
             'poster' => $posterFileName,
             'nama_pic' => $validated['nama_pic'],
+            'bank' => $validated['bank'],
+            'nama_pemilik_rekening' => $validated['nama_pemilik_rekening'],
             'keperluan' => $validated['keperluan'],
             'nominal' => $finalNominalValue, // Gunakan nilai yang sudah dibersihkan
             'no_rekening' => $validated['no_rekening'],
