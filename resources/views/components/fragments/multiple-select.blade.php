@@ -197,7 +197,7 @@
                         <span x-text="createText"></span><strong x-text="searchQuery"></strong>
                     </span>
                 </div>
-                <p class="text-xs text-green-600 ml-6">Ustadz baru akan dibuat otomatis</p>
+                <p class="text-xs text-green-600 ml-6">Data baru akan dibuat otomatis</p>
             </div>
         </div>
 
@@ -211,7 +211,7 @@
     @if ($allowCreate)
         <p class="text-xs text-gray-500 mt-1">
             <i class="fa-solid fa-lightbulb mr-1"></i>
-            Tip: Ketik nama ustadz baru jika tidak ditemukan dalam daftar
+            Tip: Ketik nama data baru jika tidak ditemukan dalam daftar
         </p>
     @endif
 </div>

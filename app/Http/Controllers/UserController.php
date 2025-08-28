@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
@@ -11,9 +12,13 @@ class UserController extends Controller
 {
     public function index()
     {
-        $data = User::latest()->get();
+        $data = User::where('id', '!=', Auth::user()->id) 
+                    ->latest()
+                    ->get();
+
         return view('dashboard.user', compact('data'));
     }
+
 
     public function store(Request $request)
     {

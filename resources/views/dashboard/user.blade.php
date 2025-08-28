@@ -2,7 +2,7 @@
 
 @section('content')
     <x-fragments.form-modal id="add-user-modal" title="Tambah User" action="{{ route('user.store') }}">
-        <x-fragments.text-field label="Nama" name="name" required />
+        <x-fragments.text-field label="Name" name="name" required />
         <x-fragments.text-field label="Email" name="email" type="email" required />
         <x-fragments.text-field label="Password" name="password" type="password" required />
         <div class="mb-4">
@@ -32,12 +32,11 @@
                 fn($row) => $row->email,
                 fn($row) => $row->role,
                 fn($row) => $row->created_at->format('d/m/Y H:i'),
-            ]" :showActions="true"
-                :actionButtons="fn($row) => view('components.action-buttons', [
-                                'modalId' => 'modal-update-user-' . $row->id,
-                                'updateRoute' => route('user.update', $row->id),
-                                'deleteRoute' => route('user.destroy', $row->id),
-                            ])" />
+            ]" :showActions="true" :actionButtons="fn($row) => view('components.action-buttons', [
+                'modalId' => 'modal-update-user-' . $row->id,
+                'updateRoute' => route('user.update', $row->id),
+                'deleteRoute' => route('user.destroy', $row->id),
+            ])" />
         </div>
     </div>
 

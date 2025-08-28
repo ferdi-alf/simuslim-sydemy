@@ -4,7 +4,7 @@
     <x-fragments.form-modal id="add-kajian-modal" title="Tambah Kajian" action="{{ route('kajian.store') }}">
         <div class="grid grid-cols-2 gap-2 ">
             <div class="col-span-2 ">
-                <label class="block text-sm font-medium text-gray-700 mb-2">
+                <label class="block text-sm font-medium text-gray-700 ">
                     Poster Kajian <span class="text-red-500">*</span>
                 </label>
 
@@ -20,7 +20,7 @@
                                 d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                         </svg>
-                        <div class="mt-4">
+                        <div class="mt-2">
                             <p class="text-sm text-gray-600">Drop file poster di sini atau</p>
                             <button type="button" @click="$refs.fileInput.click()"
                                 class="mt-2 text-blue-600 hover:text-blue-500 font-medium">
@@ -60,7 +60,8 @@
             </div>
             <x-fragments.text-field label="Judul Kajian" name="judul" required />
             <x-fragments.text-field label="Penyelenggara" name="penyelenggara" required />
-            <x-fragments.text-field label="Kategori" name="kategori" required placeholder="akidah, fiqih, tafsir, dll." />
+            <x-fragments.multiple-select label="Kategori" name="category_ids" :options="$categoriesOptions"
+                placeholder="Pilih atau ketik Kategori baru" required />
             <x-fragments.select-field label="Jenis Kajian" name="jenis" :options="['rutin' => 'Rutin', 'akbar/dauroh' => 'Akbar/Dauroh']" />
 
             <div class="col-span-2 ">
@@ -99,25 +100,25 @@
                     </div>
                 </div>
             </div>
-
-
         </div>
     </x-fragments.form-modal>
     @forelse($kajians as $kajian)
-        <x-fragments.form-modal id="modal-edit-kajian-{{ $kajian->id }}" title="Tambah Kajian"
-            action="{{ route('kajian.store') }}">
-            <div class="grid grid-cols-2 gap-2 ">
-                <div class="col-span-2 ">
+        <x-fragments.form-modal id="modal-edit-kajian-{{ $kajian->id }}" title="Edit Kajian"
+            action="{{ route('kajian.update', $kajian->id) }}" method="POST" enctype="multipart/form-data">
+            @method('PUT')
+            <div class="grid grid-cols-2 gap-2">
+                <div class="col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                         Poster Kajian <span class="text-red-500">*</span>
                     </label>
 
-                    <div x-data="fileUpload()"
+                    <div x-data="fileUpload('{{ $kajian->poster ? asset('uploads/poster/' . $kajian->poster) : '' }}')" x-init="init()"
                         class="border-2 border-dashed border-gray-300 rounded-lg p-5 text-center hover:border-blue-400 transition-colors"
                         @dragover.prevent @drop.prevent="handleDrop($event)" @dragenter.prevent="isDragging = true"
                         @dragleave.prevent="isDragging = false" :class="{ 'border-blue-400 bg-blue-50': isDragging }">
 
-                        <div x-show="!selectedFile">
+                        <!-- Area saat tidak ada file yang dipilih dan tidak ada pratinjau -->
+                        <div x-show="!selectedFile && !previewImage">
                             <svg class="mx-auto h-10 w-10 text-gray-400" stroke="currentColor" fill="none"
                                 viewBox="0 0 48 48">
                                 <path
@@ -133,17 +134,16 @@
                             </div>
                         </div>
 
-                        <div x-show="selectedFile" class="text-left">
+                        <!-- Area saat ada file yang dipilih atau pratinjau -->
+                        <div x-show="selectedFile || previewImage" class="text-left">
                             <div class="flex items-center justify-between bg-gray-50 p-3 rounded-md">
                                 <div class="flex items-center">
-                                    <svg class="h-8 w-8 text-blue-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd"
-                                            d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"
-                                            clip-rule="evenodd" />
-                                    </svg>
+                                    <img x-bind:src="previewImage" class="h-16 w-16 object-cover rounded mr-3"
+                                        alt="Poster Preview" />
                                     <div>
                                         <p class="text-sm font-medium text-gray-900"
-                                            x-text="selectedFile ? selectedFile.name : ''"></p>
+                                            x-text="selectedFile ? selectedFile.name : '{{ $kajian->poster ?? 'No poster' }}'">
+                                        </p>
                                         <p class="text-xs text-gray-500"
                                             x-text="selectedFile ? formatFileSize(selectedFile.size) : ''"></p>
                                     </div>
@@ -159,13 +159,15 @@
                         </div>
 
                         <input type="file" x-ref="fileInput" name="poster" accept="image/*" class="hidden"
-                            @change="handleFileSelect($event)" required>
+                            @change="handleFileSelect($event)">
+                        <!-- Input hidden untuk flag penghapusan poster -->
+                        <input type="hidden" name="delete_poster" x-bind:value="deletePoster ? 1 : 0">
                     </div>
                 </div>
                 <x-fragments.text-field label="Judul Kajian" name="judul" required :value="$kajian->judul" />
                 <x-fragments.text-field label="Penyelenggara" name="penyelenggara" required :value="$kajian->penyelenggara" />
-                <x-fragments.text-field label="Kategori" name="kategori" required
-                    placeholder="akidah, fiqih, tafsir, dll." :value="$kajian->kategori" />
+                <x-fragments.multiple-select label="Kategori" name="category_ids" :options="$categoriesOptions" :value="$kajian->categories->pluck('id')->toArray()"
+                    placeholder="Pilih atau ketik Kategori baru" required />
                 <x-fragments.select-field label="Jenis Kajian" name="jenis" :options="['rutin' => 'Rutin', 'akbar/dauroh' => 'Akbar/Dauroh']" :value="$kajian->jenis" />
 
                 <div class="col-span-2 ">
@@ -173,7 +175,7 @@
                         Lokasi Kajian <span class="text-red-500">*</span>
                     </label>
 
-                    <div x-data="{ lokasiType: 'masjid' }" class="space-y-3">
+                    <div x-data="{ lokasiType: '{{ $kajian->masjid_id ? 'masjid' : 'manual' }}' }" class="space-y-3">
                         <div class="flex space-x-4">
                             <label class="flex items-center">
                                 <input type="radio" x-model="lokasiType" value="masjid" class="mr-2">
@@ -191,7 +193,7 @@
                                 <option value="">Pilih Masjid</option>
                                 @foreach ($masjids as $masjid)
                                     <option value="{{ $masjid->id }}"
-                                        {{ old('masjid_id', isset($kajian) ? $kajian->masjid_id : '') == $masjid->id ? 'selected' : '' }}>
+                                        {{ old('masjid_id', $kajian->masjid_id) == $masjid->id ? 'selected' : '' }}>
                                         {{ $masjid->nama }} - {{ $masjid->alamat }}
                                     </option>
                                 @endforeach
@@ -201,12 +203,10 @@
                         <div x-show="lokasiType === 'manual'" x-transition>
                             <textarea name="alamat_manual" rows="2"
                                 class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Masukkan alamat lengkap lokasi kajian"></textarea>
+                                placeholder="Masukkan alamat lengkap lokasi kajian">{{ old('alamat_manual', $kajian->alamat_manual) }}</textarea>
                         </div>
                     </div>
                 </div>
-
-
             </div>
         </x-fragments.form-modal>
 
@@ -264,7 +264,7 @@
                 ]" />
                 <x-fragments.select-field label="Diperuntukan" name="diperuntukan" :options="[
                     'semua kaum muslim' => 'Semua Kaum muslim',
-                    'ikwhan' => 'ikwhan',
+                    'ikhwan' => 'ikhwan',
                     'akhwat' => 'Akhwat',
                 ]" />
 
@@ -274,7 +274,7 @@
                 </div>
             </div>
         </x-fragments.form-modal>
-        <!-- Modal Form - Fixed -->
+
         @foreach ($kajian->jadwalKajians as $jadwal)
             <x-fragments.form-modal id="modal-edit-jadwal-{{ $jadwal->id }}" title="Edit Jadwal Kajian"
                 action="{{ route('kajian.update-jadwal', $jadwal->id) }}" method="PUT">
@@ -440,7 +440,19 @@
                                             </div>
                                         </td>
                                         <td class="px-4 py-3 whitespace-nowrap">
-                                            <p class="text-xs text-gray-500">{{ $kajian->kategori }}</p>
+                                            @if ($kajian->categories->count() > 0)
+                                                <div class="gridgap-2 col-span-2">
+                                                    @foreach ($kajian->categories as $category)
+                                                        <span
+                                                            class="inline-block bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">
+                                                            {{ $category->nama }}
+                                                        </span>
+                                                    @endforeach
+                                                </div>
+                                            @else
+                                                <span class="text-gray-400 italic text-sm">Belum ada
+                                                    Kategori</span>
+                                            @endif
                                         </td>
                                         <td class="px-4 py-3 whitespace-nowrap">
                                             <span
@@ -646,37 +658,58 @@
 
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
-    <script>
-        function openAddJadwalModal(kajianId) {
-            document.getElementById('jadwal-kajian-id').value = kajianId;
-            const modal = document.getElementById('add-jadwal-modal');
-            const backdrop = modal.querySelector('.modal-backdrop') || modal;
-            backdrop.classList.remove('hidden');
-        }
 
-        function fileUpload() {
-            return {
+
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('fileUpload', (existingPoster = '') => ({
                 isDragging: false,
                 selectedFile: null,
-
-                handleDrop(event) {
-                    this.isDragging = false;
-                    const files = event.dataTransfer.files;
-                    if (files.length > 0) {
-                        this.selectedFile = files[0];
-                        this.$refs.fileInput.files = files;
+                previewImage: null,
+                existingPoster: existingPoster,
+                deletePoster: false, // State untuk melacak penghapusan poster
+                init() {
+                    console.log('fileUpload init, existingPoster:', this.existingPoster);
+                    if (this.existingPoster) {
+                        this.previewImage = this.existingPoster;
                     }
                 },
-
                 handleFileSelect(event) {
-                    this.selectedFile = event.target.files[0];
+                    const file = event.target.files[0];
+                    if (file && file.type.startsWith('image/')) {
+                        this.selectedFile = file;
+                        this.deletePoster = false; // Reset deletePoster saat file baru dipilih
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            this.previewImage = e.target.result;
+                            console.log('File selected, previewImage:', this.previewImage);
+                        };
+                        reader.readAsDataURL(file);
+                    }
                 },
-
+                handleDrop(event) {
+                    const file = event.dataTransfer.files[0];
+                    if (file && file.type.startsWith('image/')) {
+                        this.selectedFile = file;
+                        this.deletePoster = false; // Reset deletePoster saat file baru di-drop
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            this.previewImage = e.target.result;
+                            console.log('File dropped, previewImage:', this.previewImage);
+                        };
+                        reader.readAsDataURL(file);
+                        this.isDragging = false;
+                    }
+                },
                 removeFile() {
+                    console.log('removeFile called');
                     this.selectedFile = null;
-                    this.$refs.fileInput.value = '';
+                    this.previewImage = null; // Hapus pratinjau sepenuhnya
+                    this.deletePoster = true; // Tandai bahwa poster harus dihapus
+                    this.$refs.fileInput.value = ''; // Reset input file
+                    console.log('After removeFile, selectedFile:', this.selectedFile, 'previewImage:',
+                        this.previewImage, 'deletePoster:', this.deletePoster);
                 },
-
                 formatFileSize(bytes) {
                     if (bytes === 0) return '0 Bytes';
                     const k = 1024;
@@ -684,11 +717,18 @@
                     const i = Math.floor(Math.log(bytes) / Math.log(k));
                     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
                 }
-            }
+            }));
+        });
+
+        // Fungsi untuk membuka modal tambah jadwal
+        function openAddJadwalModal(kajianId) {
+            document.getElementById('jadwal-kajian-id').value = kajianId;
+            const modal = document.getElementById('add-jadwal-modal');
+            const backdrop = modal.querySelector('.modal-backdrop') || modal;
+            backdrop.classList.remove('hidden');
         }
 
-
-
+        // Fungsi untuk membuka modal edit jadwal
         function openEditJadwalModal(jadwalId, jadwalData) {
             const form = document.querySelector('#edit-jadwal-modal form');
             form.action = `{{ url('kajian/jadwal') }}/${jadwalId}`;

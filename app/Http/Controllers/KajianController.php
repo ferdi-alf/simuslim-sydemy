@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\AlertHelper;
+use App\Models\Category;
 use App\Models\KajianPoster;
 use App\Models\JadwalKajian;
 use App\Models\Ustadz;
@@ -15,21 +16,29 @@ use Illuminate\Validation\Rule;
 class KajianController extends Controller
 {
     public function index() {
-        $kajians = KajianPoster::with(['masjid', 'jadwalKajians.ustadzs'])
-            ->orderBy('created_at', 'desc')
-            ->get();
+    $kajians = KajianPoster::with(['masjid', 'jadwalKajians.ustadzs', 'categories'])
+        ->orderBy('created_at', 'desc')
+        ->get();
 
-        $masjids = Masjid::orderBy('nama')->get();
-        
-        $ustadzs = Ustadz::orderBy('nama_lengkap')->get();
-        $ustadzOptions = $ustadzs->map(function ($ustadz) {
-            return [
-                'value' => $ustadz->id,
-                'label' => $ustadz->nama_lengkap
-            ];
-        })->toArray();
+    $masjids = Masjid::orderBy('nama')->get();
+    
+    $ustadzs = Ustadz::orderBy('nama_lengkap')->get();
+    $ustadzOptions = $ustadzs->map(function ($ustadz) {
+        return [
+            'value' => $ustadz->id,
+            'label' => $ustadz->nama_lengkap
+        ];
+    })->toArray();
 
-        return view('dashboard.kajian', compact('kajians', 'masjids', 'ustadzOptions'));
+    $categories = Category::active()->orderBy('nama')->get();
+     $categoriesOptions = $categories->map(function ($categorie) {
+        return [
+            'value' => $categorie->id,
+            'label' => $categorie->nama
+        ];
+    })->toArray();
+
+    return view('dashboard.kajian', compact('kajians', 'masjids', 'ustadzOptions', 'categoriesOptions'));
     }
 
     public function getAllKajianPosters()
@@ -90,7 +99,6 @@ class KajianController extends Controller
         }
     }
 
-    // Method untuk get jadwal kajian saja
     public function getAllJadwalKajian()
     {
         try {
@@ -141,7 +149,8 @@ class KajianController extends Controller
     public function store(Request $request) {
         $request->validate([
             'judul' => 'required|string|max:255',
-            'kategori' => 'required|string|max:255',
+            'category_ids' => 'required|array|min:1', // Changed from kategori to category_ids
+            'category_ids.*' => 'string|max:255', // Allow string untuk kategori baru
             'jenis' => ['required', Rule::in(['rutin', 'akbar/dauroh'])],
             'poster' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             'penyelenggara' => 'required|string|max:255',
@@ -167,12 +176,35 @@ class KajianController extends Controller
         $kajian = KajianPoster::create([
             'masjid_id' => $request->masjid_id,
             'judul' => $request->judul,
-            'kategori' => $request->kategori,
             'jenis' => $request->jenis,
             'poster' => $posterFileName,
             'penyelenggara' => $request->penyelenggara,
             'alamat_manual' => $request->alamat_manual,
         ]);
+
+        if ($request->category_ids) {
+            $categoryIds = [];
+            foreach ($request->category_ids as $categoryData) {
+                $categoryData = trim($categoryData);
+                
+                if (is_numeric($categoryData) && Category::find($categoryData)) {
+                    $categoryIds[] = $categoryData;
+                } else {
+                    $existingCategory = Category::where('nama', $categoryData)->first();
+                    if ($existingCategory) {
+                        $categoryIds[] = $existingCategory->id;
+                    } else {
+                        $newCategory = Category::create([
+                            'nama' => $categoryData,
+                            'deskripsi' => null,
+                            'is_active' => true,
+                        ]);
+                        $categoryIds[] = $newCategory->id;
+                    }
+                }
+            }
+            $kajian->categories()->attach($categoryIds);
+        }
 
         return redirect()->route('kajian.index')->with(AlertHelper::success('Kajian berhasil ditambahkan', 'success'));
     }
@@ -183,7 +215,8 @@ class KajianController extends Controller
 
         $request->validate([
             'judul' => 'required|string|max:255',
-            'kategori' => 'required|string|max:255',
+            'category_ids' => 'required|array|min:1',
+            'category_ids.*' => 'string|max:255',
             'jenis' => ['required', Rule::in(['rutin', 'akbar/dauroh'])],
             'poster' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'penyelenggara' => 'required|string|max:255',
@@ -202,7 +235,6 @@ class KajianController extends Controller
         $updateData = [
             'masjid_id' => $request->masjid_id,
             'judul' => $request->judul,
-            'kategori' => $request->kategori,
             'jenis' => $request->jenis,
             'penyelenggara' => $request->penyelenggara,
             'alamat_manual' => $request->alamat_manual,
@@ -219,6 +251,32 @@ class KajianController extends Controller
         }
 
         $kajian->update($updateData);
+
+        // Update categories
+        if ($request->category_ids) {
+            $categoryIds = [];
+            foreach ($request->category_ids as $categoryData) {
+                $categoryData = trim($categoryData);
+                
+                if (is_numeric($categoryData) && Category::find($categoryData)) {
+                    $categoryIds[] = $categoryData;
+                } else {
+                    $existingCategory = Category::where('nama', $categoryData)->first();
+                    if ($existingCategory) {
+                        $categoryIds[] = $existingCategory->id;
+                    } else {
+                        $newCategory = Category::create([
+                            'nama' => $categoryData,
+                            'deskripsi' => null,
+                            'is_active' => true,
+                        ]);
+                        $categoryIds[] = $newCategory->id;
+                    }
+                }
+            }
+            // Sync akan menghapus relasi lama dan menambah yang baru
+            $kajian->categories()->sync($categoryIds);
+        }
 
         return redirect()->route('kajian.index')->with(AlertHelper::success('Kajian berhasil diperbarui', 'Success'));
     }
@@ -247,7 +305,6 @@ class KajianController extends Controller
             'ustadz_ids.*' => 'nullable|string',
         ]);
 
-        // Map English day names to Indonesian
         $dayMap = [
             'Monday' => 'Senin',
             'Tuesday' => 'Selasa',
@@ -279,12 +336,10 @@ class KajianController extends Controller
                 if (is_numeric($ustadzData) && Ustadz::find($ustadzData)) {
                     $ustadzIds[] = $ustadzData;
                 } else {
-                    // Check if an Ustadz with this name already exists
                     $existingUstadz = Ustadz::where('nama_lengkap', $ustadzData)->first();
                     if ($existingUstadz) {
                         $ustadzIds[] = $existingUstadz->id;
                     } else {
-                        // Create new Ustadz if no existing match is found
                         $newUstadz = Ustadz::create([
                             'nama_lengkap' => $ustadzData,
                             'alamat' => null,

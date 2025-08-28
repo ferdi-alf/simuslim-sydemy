@@ -24,7 +24,7 @@ Route::middleware('web', 'guest')->group(function() {
     });
 });
 
-Route::middleware(['auth'])->group(function() {
+Route::middleware(['auth', 'deny.roles:jamaah'])->group(function() {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
      Route::controller(MasjidController::class)->prefix('masjid')->name('masjid.')->group(function () {

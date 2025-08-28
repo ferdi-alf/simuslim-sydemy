@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'auth' => \App\Http\Middleware\Authenticate::class,
             'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
             'mobile.api.security' => \App\Http\Middleware\MobileApiSecurity::class,
+            'deny.roles' => \App\Http\Middleware\DenyRolesMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
