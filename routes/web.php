@@ -8,6 +8,7 @@ use App\Http\Controllers\KajianController;
 use App\Http\Controllers\KajianRekamanController;
 use App\Http\Controllers\MasjidController;
 use App\Http\Controllers\SymuslimController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\UstadzController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -34,6 +35,13 @@ Route::middleware(['auth'])->group(function() {
         });
     
      Route::controller(UstadzController::class)->prefix('ustadz')->name('ustadz.')->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::post('/', 'store')->name('store');
+            Route::put('/{id}', 'update')->name('update');
+            Route::delete('/{id}', 'destroy')->name('destroy');
+        });
+
+     Route::controller(UserController::class)->prefix('user')->name('user.')->group(function () {
             Route::get('/', 'index')->name('index');
             Route::post('/', 'store')->name('store');
             Route::put('/{id}', 'update')->name('update');

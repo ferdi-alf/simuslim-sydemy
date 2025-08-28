@@ -20,6 +20,8 @@
             <ul class="space-y-2 font-medium mt-10">
                 <x-fragments.sidebar-item route="dashboard" icon="gauge"
                     colors="indigo">Dashboard</x-fragments.sidebar-item>
+                <x-fragments.sidebar-item route="user.index" icon="users"
+                    colors="indigo">Users</x-fragments.sidebar-item>
                 <x-fragments.sidebar-item route="masjid.index" icon="mosque"
                     colors="indigo">Masjid</x-fragments.sidebar-item>
                 <x-fragments.sidebar-item route="ustadz.index" icon="user-plus"

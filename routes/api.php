@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\BannerController;
 use App\Http\Controllers\DonasiController;
 use App\Http\Controllers\MasjidController;
@@ -10,19 +11,18 @@ use App\Http\Controllers\KajianController;
 use App\Http\Controllers\KajianRekamanController;
 use App\Http\Controllers\SymuslimController;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
-|
-*/
+Route::prefix('v1/mobile/auth')->group(function () {
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/login', [AuthController::class, 'login']);
+    
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/logout', [AuthController::class, 'logout']);
+        Route::get('/profile', [AuthController::class, 'profile']);
+        Route::post('/refresh-token', [AuthController::class, 'refreshToken']);
+    });
+});
 
-// API Version 1 - Mobile App
-Route::prefix('v1/mobile')->group(function () {
+Route::prefix('v1/mobile')->middleware('mobile.api.security')->group(function () {
     
     // Banner endpoints
     Route::get('/banners', [BannerController::class, 'getAllBanners']);
@@ -46,16 +46,16 @@ Route::prefix('v1/mobile')->group(function () {
     // Bacaan (Symuslim) endpoints
     Route::get('/bacaan', [SymuslimController::class, 'getAllBacaan']);
     Route::get('/bacaan-details', [SymuslimController::class, 'getAllBacaanDetails']);
-    
 });
 
 
-// Health check endpoint
-Route::get('/health', function () {
+Route::get('/v1/test', function () {
     return response()->json([
         'status' => 'success',
-        'message' => 'API is running properly',
-        'timestamp' => now(),
-        'version' => '1.0.0'
+        'message' => 'API is working',
+        'data' => [
+            'app_status' => env('APP_STATUS', 'NOT_OPEN'),
+            'timestamp' => now()
+        ]
     ]);
 });

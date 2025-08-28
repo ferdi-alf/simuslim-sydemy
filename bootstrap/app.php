@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'auth' => \App\Http\Middleware\Authenticate::class,
             'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
+            'mobile.api.security' => \App\Http\Middleware\MobileApiSecurity::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
