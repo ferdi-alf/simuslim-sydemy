@@ -166,7 +166,7 @@ class DonasiController extends Controller
             'bank' => $validated['bank'],
             'nama_pemilik_rekening' => $validated['nama_pemilik_rekening'],
             'keperluan' => $validated['keperluan'],
-            'nominal' => $finalNominalValue, // Gunakan nilai yang sudah dibersihkan
+            'nominal' => $finalNominalValue, 
             'no_rekening' => $validated['no_rekening'],
             'keterangan' => $validated['keterangan'],
         ]);

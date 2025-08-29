@@ -15,12 +15,9 @@ class MobileApiSecurity
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Cek status aplikasi dari environment
         $appStatus = env('APP_STATUS', 'NOT_OPEN');
 
-        // Jika status OPEN_REGISTER, maka perlu autentikasi
         if ($appStatus === 'OPEN_REGISTER') {
-            // Cek apakah user sudah login (menggunakan Sanctum atau auth:api)
             if (!auth('sanctum')->check()) {
                 return response()->json([
                     'status' => 'error',

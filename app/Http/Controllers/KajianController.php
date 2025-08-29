@@ -51,14 +51,13 @@ class KajianController extends Controller
                         ->select('id', 'kajian_id', 'jam_mulai', 'jam_selesai', 'tanggal', 'hari', 'status', 'diperuntukan');
                 }
             ])
-            ->select('id', 'masjid_id', 'judul', 'poster', 'deskripsi')
+            ->select('id', 'masjid_id', 'judul', 'poster')
             ->get()
             ->map(function($kajian) {
                 return [
                     'id' => $kajian->id,
                     'judul' => $kajian->judul,
-                    'deskripsi' => $kajian->deskripsi,
-                    'poster_url' => $kajian->poster ? asset('uploads/kajian-poster/' . $kajian->poster) : null,
+                    'poster_url' => $kajian->poster ? asset('uploads/poster/' . $kajian->poster) : null,
                     'masjid' => [
                         'id' => $kajian->masjid->id ?? null,
                         'nama' => $kajian->masjid->nama ?? null,
@@ -120,7 +119,7 @@ class KajianController extends Controller
                     'kajian_poster' => [
                         'id' => $jadwal->kajian->id ?? null,
                         'judul' => $jadwal->kajian->judul ?? null,
-                        'poster_url' => $jadwal->kajian->poster ? asset('uploads/kajian-poster/' . $jadwal->kajian->poster) : null
+                        'poster_url' => $jadwal->kajian->poster ? asset('uploads/poster/' . $jadwal->kajian->poster) : null
                     ],
                     'ustadz' => $jadwal->ustadzs->map(function($ustadz) {
                         return [
@@ -149,8 +148,8 @@ class KajianController extends Controller
     public function store(Request $request) {
         $request->validate([
             'judul' => 'required|string|max:255',
-            'category_ids' => 'required|array|min:1', // Changed from kategori to category_ids
-            'category_ids.*' => 'string|max:255', // Allow string untuk kategori baru
+            'category_ids' => 'required|array|min:1', 
+            'category_ids.*' => 'string|max:255', 
             'jenis' => ['required', Rule::in(['rutin', 'akbar/dauroh'])],
             'poster' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             'penyelenggara' => 'required|string|max:255',

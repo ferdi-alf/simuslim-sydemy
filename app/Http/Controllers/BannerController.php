@@ -27,7 +27,6 @@ class BannerController extends Controller
                         'judul' => $banner->judul,
                         'kategori' => $banner->kategori,
                         'banner_url' => $banner->banners ? asset('uploads/banners/' . $banner->banners) : asset('images/default-banner.jpg'),
-                        'banner_html' => $banner->getBannerHtmlAttribute(),
                         'initials' => $this->generateInitials($banner->judul)
                     ];
                 });

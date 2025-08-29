@@ -6,6 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Helpers\AlertHelper;
+use Illuminate\Support\Facades\Log;
 
 class DenyRolesMiddleware
 {
@@ -19,15 +20,34 @@ class DenyRolesMiddleware
     public function handle(Request $request, Closure $next, ...$deniedRoles)
     {
         if (!Auth::check()) {
-            return redirect('/login')->with(AlertHelper::error('You must be logged in to access this page.', 'Authentication Required'));
+            return redirect()
+                ->route('login.index')
+                ->with(AlertHelper::error(
+                    'You must be logged in to access this page.',
+                    'Authentication Required'
+                ));
         }
 
         $userRole = Auth::user()->role;
+log::info('Role user saat ini: ' . $userRole);
+
+        
 
         if (in_array($userRole, $deniedRoles)) {
-            return redirect('/login')->with(AlertHelper::error('Access denied for role: ' . $userRole, 'Access Forbidden'));
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            
+
+            return redirect()
+                ->route('login.index')
+                ->with(AlertHelper::error(
+                    'Access denied for role: ' . $userRole,
+                    'Access Forbidden'
+                ));
         }
 
         return $next($request);
     }
+
 }
