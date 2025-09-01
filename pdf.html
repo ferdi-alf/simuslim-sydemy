@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="id">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>API Documentation - Mobile App</title>
+        <style>
+            @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: "Inter", sans-serif;
+                line-height: 1.6;
+                color: #1f2937;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                min-height: 100vh;
+                padding: 20px;
+            }
+
+            .container {
+                max-width: 1200px;
+                margin: 0 auto;
+                background: white;
+                border-radius: 20px;
+                box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+                overflow: hidden;
+            }
+
+            .header {
+                background: linear-gradient(135deg, #1e40af 0%, #3730a3 100%);
+                color: white;
+                padding: 40px;
+                text-align: center;
+            }
+
+            .header h1 {
+                font-size: 3rem;
+                font-weight: 700;
+                margin-bottom: 10px;
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            }
+
+            .header .subtitle {
+                font-size: 1.2rem;
+                opacity: 0.9;
+                font-weight: 300;
+            }
+
+            .base-url {
+                background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+                padding: 30px 40px;
+                border-left: 5px solid #3b82f6;
+            }
+
+            .base-url h2 {
+                color: #1e40af;
+                margin-bottom: 15px;
+                font-size: 1.5rem;
+            }
+
+            .url-box {
+                background: #1e293b;
+                color: #e2e8f0;
+                padding: 15px 20px;
+                border-radius: 10px;
+                font-family: "Courier New", monospace;
+                font-size: 1.1rem;
+                border: 2px solid #334155;
+            }
+
+            .content {
+                padding: 40px;
+            }
+
+            .endpoint {
+                margin-bottom: 50px;
+                border: 1px solid #e5e7eb;
+                border-radius: 15px;
+                overflow: hidden;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            }
+
+            .endpoint-header {
+                background: linear-gradient(135deg, #059669 0%, #047857 100%);
+                color: white;
+                padding: 25px 30px;
+                display: flex;
+                align-items: center;
+                gap: 15px;
+            }
+
+            .endpoint-number {
+                background: rgba(255, 255, 255, 0.2);
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 700;
+                font-size: 1.2rem;
+            }
+
+            .endpoint-title {
+                font-size: 1.8rem;
+                font-weight: 600;
+            }
+
+            .endpoint-body {
+                padding: 30px;
+            }
+
+            .method-url {
+                display: flex;
+                align-items: center;
+                gap: 15px;
+                margin-bottom: 25px;
+                padding: 15px;
+                background: #f1f5f9;
+                border-radius: 10px;
+                border-left: 4px solid #10b981;
+            }
+
+            .http-method {
+                background: #10b981;
+                color: white;
+                padding: 8px 16px;
+                border-radius: 8px;
+                font-weight: 600;
+                font-size: 0.9rem;
+            }
+
+            .endpoint-url {
+                font-family: "Courier New", monospace;
+                font-weight: 500;
+                color: #374151;
+                font-size: 1.1rem;
+            }
+
+            .response-section {
+                margin-top: 25px;
+            }
+
+            .response-title {
+                font-size: 1.3rem;
+                font-weight: 600;
+                color: #1f2937;
+                margin-bottom: 15px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .response-title::before {
+                content: "📄";
+                font-size: 1.2rem;
+            }
+
+            .json-container {
+                background: #0f172a;
+                border-radius: 12px;
+                padding: 25px;
+                overflow-x: auto;
+                border: 2px solid #1e293b;
+                box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.3);
+            }
+
+            .json-code {
+                font-family: "Courier New", monospace;
+                font-size: 0.9rem;
+                line-height: 1.5;
+                color: #e2e8f0;
+                white-space: pre-wrap;
+            }
+
+            .json-key {
+                color: #60a5fa;
+            }
+
+            .json-string {
+                color: #34d399;
+            }
+
+            .json-number {
+                color: #fbbf24;
+            }
+
+            .json-boolean {
+                color: #f87171;
+            }
+
+            .print-button {
+                position: fixed;
+                top: 30px;
+                right: 30px;
+                background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+                color: white;
+                border: none;
+                padding: 15px 25px;
+                border-radius: 50px;
+                font-weight: 600;
+                cursor: pointer;
+                box-shadow: 0 8px 25px rgba(220, 38, 38, 0.3);
+                transition: all 0.3s ease;
+                font-size: 1rem;
+                z-index: 1000;
+            }
+
+            .print-button:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 12px 35px rgba(220, 38, 38, 0.4);
+            }
+
+            .print-button::before {
+                content: "🖨️ ";
+                margin-right: 8px;
+            }
+
+            @media print {
+                body {
+                    background: white;
+                    padding: 0;
+                }
+
+                .container {
+                    box-shadow: none;
+                    border-radius: 0;
+                }
+
+                .print-button {
+                    display: none;
+                }
+
+                .endpoint {
+                    page-break-inside: avoid;
+                    break-inside: avoid;
+                }
+
+                .endpoint-header {
+                    background: #059669 !important;
+                    -webkit-print-color-adjust: exact;
+                    color-adjust: exact;
+                }
+
+                .json-container {
+                    background: #f8fafc !important;
+                    color: #1f2937 !important;
+                    border: 1px solid #d1d5db;
+                }
+
+                .json-code {
+                    color: #1f2937 !important;
+                }
+
+                .json-key {
+                    color: #1d4ed8 !important;
+                }
+                .json-string {
+                    color: #059669 !important;
+                }
+                .json-number {
+                    color: #dc2626 !important;
+                }
+                .json-boolean {
+                    color: #7c2d12 !important;
+                }
+            }
+
+            @media (max-width: 768px) {
+                .header h1 {
+                    font-size: 2rem;
+                }
+
+                .content {
+                    padding: 20px;
+                }
+
+                .endpoint-body {
+                    padding: 20px;
+                }
+
+                .print-button {
+                    top: 20px;
+                    right: 20px;
+                    padding: 12px 20px;
+                    font-size: 0.9rem;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <button class="print-button" onclick="window.print()">Print PDF</button>
+
+        <div class="container">
+            <div class="header">
+                <h1>API Documentation</h1>
+                <p class="subtitle">Mobile Application REST API</p>
+            </div>
+
+            <div class="base-url">
+                <h2>Base URL</h2>
+                <div class="url-box">http://your-domain.com/api/</div>
+            </div>
+
+            <div class="content">
+                <!-- Banner Endpoint -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <div class="endpoint-number">1</div>
+                        <div class="endpoint-title">Banner</div>
+                    </div>
+                    <div class="endpoint-body">
+                        <div class="method-url">
+                            <span class="http-method">GET</span>
+                            <span class="endpoint-url">/mobile/banners</span>
+                            <span style="color: #6b7280">atau</span>
+                            <span class="endpoint-url">/v1/mobile/banners</span>
+                        </div>
+
+                        <div class="response-section">
+                            <div class="response-title">Response</div>
+                            <div class="json-container">
+                                <div class="json-code">
+                                    { <span class="json-key">"status"</span>:
+                                    <span class="json-string">"success"</span>,
+                                    <span class="json-key">"message"</span>:
+                                    <span class="json-string"
+                                        >"Data banner berhasil diambil"</span
+                                    >, <span class="json-key">"data"</span>: [ {
+                                    <span class="json-key">"id"</span>:
+                                    <span class="json-number">1</span>,
+                                    <span class="json-key">"judul"</span>:
+                                    <span class="json-string"
+                                        >"Banner Title"</span
+                                    >, <span class="json-key">"kategori"</span>:
+                                    <span class="json-string">"kategori"</span>,
+                                    <span class="json-key">"banner_url"</span>:
+                                    <span class="json-string"
+                                        >"http://domain.com/uploads/banners/banner.jpg"</span
+                                    >,
+                                    <span class="json-key">"banner_html"</span>:
+                                    <span class="json-string"
+                                        >"HTML content"</span
+                                    >, <span class="json-key">"initials"</span>:
+                                    <span class="json-string">"BT"</span> } ] }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Donasi Endpoint -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <div class="endpoint-number">2</div>
+                        <div class="endpoint-title">Donasi</div>
+                    </div>
+                    <div class="endpoint-body">
+                        <div class="method-url">
+                            <span class="http-method">GET</span>
+                            <span class="endpoint-url">/mobile/donasi</span>
+                        </div>
+
+                        <div class="response-section">
+                            <div class="response-title">Response</div>
+                            <div class="json-container">
+                                <div class="json-code">
+                                    { <span class="json-key">"status"</span>:
+                                    <span class="json-string">"success"</span>,
+                                    <span class="json-key">"message"</span>:
+                                    <span class="json-string"
+                                        >"Data donasi berhasil diambil"</span
+                                    >, <span class="json-key">"data"</span>: [ {
+                                    <span class="json-key">"id"</span>:
+                                    <span class="json-number">1</span>,
+                                    <span class="json-key">"judul"</span>:
+                                    <span class="json-string"
+                                        >"Donasi Title"</span
+                                    >, <span class="json-key">"nama_pic"</span>:
+                                    <span class="json-string"
+                                        >"Person in Charge"</span
+                                    >,
+                                    <span class="json-key">"keperluan"</span>:
+                                    <span class="json-string"
+                                        >"Untuk kebutuhan..."</span
+                                    >, <span class="json-key">"nominal"</span>:
+                                    <span class="json-number">5000000</span>,
+                                    <span class="json-key"
+                                        >"formatted_nominal"</span
+                                    >:
+                                    <span class="json-string"
+                                        >"Rp 5.000.000"</span
+                                    >,
+                                    <span class="json-key">"no_rekening"</span>:
+                                    <span class="json-string">"1234567890"</span
+                                    >,
+                                    <span class="json-key">"keterangan"</span>:
+                                    <span class="json-string"
+                                        >"Keterangan donasi"</span
+                                    >,
+                                    <span class="json-key">"poster_url"</span>:
+                                    <span class="json-string"
+                                        >"http://domain.com/uploads/poster/poster.jpg"</span
+                                    >,
+                                    <span class="json-key">"poster_html"</span>:
+                                    <span class="json-string"
+                                        >"HTML content"</span
+                                    >, <span class="json-key">"initials"</span>:
+                                    <span class="json-string">"DT"</span> } ] }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Masjid Endpoint -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <div class="endpoint-number">3</div>
+                        <div class="endpoint-title">Masjid</div>
+                    </div>
+                    <div class="endpoint-body">
+                        <div class="method-url">
+                            <span class="http-method">GET</span>
+                            <span class="endpoint-url">/mobile/masjid</span>
+                        </div>
+
+                        <div class="response-section">
+                            <div class="response-title">Response</div>
+                            <div class="json-container">
+                                <div class="json-code">
+                                    { <span class="json-key">"status"</span>:
+                                    <span class="json-string">"success"</span>,
+                                    <span class="json-key">"message"</span>:
+                                    <span class="json-string"
+                                        >"Data masjid berhasil diambil"</span
+                                    >, <span class="json-key">"data"</span>: [ {
+                                    <span class="json-key">"id"</span>:
+                                    <span class="json-number">1</span>,
+                                    <span class="json-key">"nama"</span>:
+                                    <span class="json-string"
+                                        >"Masjid Al-Ikhlas"</span
+                                    >, <span class="json-key">"alamat"</span>:
+                                    <span class="json-string"
+                                        >"Jl. Contoh No. 123"</span
+                                    >, <span class="json-key">"maps"</span>:
+                                    <span class="json-string"
+                                        >"google_maps_link"</span
+                                    >, <span class="json-key">"channels"</span>:
+                                    <span class="json-string"
+                                        >"channel_info"</span
+                                    >,
+                                    <span class="json-key">"total_kajian"</span
+                                    >: <span class="json-number">5</span>,
+                                    <span class="json-key"
+                                        >"kajian_posters"</span
+                                    >: [ { <span class="json-key">"id"</span>:
+                                    <span class="json-number">1</span>,
+                                    <span class="json-key">"judul"</span>:
+                                    <span class="json-string"
+                                        >"Kajian Fiqh"</span
+                                    >,
+                                    <span class="json-key">"poster_url"</span>:
+                                    <span class="json-string"
+                                        >"http://domain.com/uploads/kajian-poster/poster.jpg"</span
+                                    >,
+                                    <span class="json-key">"deskripsi"</span>:
+                                    <span class="json-string"
+                                        >"Deskripsi kajian"</span
+                                    >
+                                    } ] } ] }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ustadz Endpoint -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <div class="endpoint-number">4</div>
+                        <div class="endpoint-title">Ustadz</div>
+                    </div>
+                    <div class="endpoint-body">
+                        <div class="method-url">
+                            <span class="http-method">GET</span>
+                            <span class="endpoint-url">/mobile/ustadz</span>
+                        </div>
+
+                        <div class="response-section">
+                            <div class="response-title">Response</div>
+                            <div class="json-container">
+                                <div class="json-code">
+                                    { <span class="json-key">"status"</span>:
+                                    <span class="json-string">"success"</span>,
+                                    <span class="json-key">"message"</span>:
+                                    <span class="json-string"
+                                        >"Data ustadz berhasil diambil"</span
+                                    >, <span class="json-key">"data"</span>: [ {
+                                    <span class="json-key">"id"</span>:
+                                    <span class="json-number">1</span>,
+                                    <span class="json-key">"nama_lengkap"</span
+                                    >:
+                                    <span class="json-string"
+                                        >"Ustadz Ahmad"</span
+                                    >, <span class="json-key">"alamat"</span>:
+                                    <span class="json-string"
+                                        >"Alamat ustadz"</span
+                                    >,
+                                    <span class="json-key"
+                                        >"riwayat_pendidikan"</span
+                                    >:
+                                    <span class="json-string"
+                                        >"S1 Islamic Studies"</span
+                                    >,
+                                    <span class="json-key">"social_media"</span
+                                    >: {
+                                    <span class="json-key">"youtube"</span>:
+                                    <span class="json-string"
+                                        >"youtube_channel"</span
+                                    >,
+                                    <span class="json-key">"instagram"</span>:
+                                    <span class="json-string"
+                                        >"@ustadz_ahmad"</span
+                                    >, <span class="json-key">"tiktok"</span>:
+                                    <span class="json-string"
+                                        >"@ustadz_ahmad"</span
+                                    >
+                                    },
+                                    <span class="json-key">"statistics"</span>:
+                                    {
+                                    <span class="json-key"
+                                        >"total_kajian_rekaman"</span
+                                    >: <span class="json-number">10</span>,
+                                    <span class="json-key"
+                                        >"total_jadwal_kajian"</span
+                                    >: <span class="json-number">5</span> } } ]
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kajian Poster Endpoint -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <div class="endpoint-number">5</div>
+                        <div class="endpoint-title">
+                            Kajian Poster (dengan Jadwal dan Ustadz)
+                        </div>
+                    </div>
+                    <div class="endpoint-body">
+                        <div class="method-url">
+                            <span class="http-method">GET</span>
+                            <span class="endpoint-url"
+                                >/mobile/kajian-posters</span
+                            >
+                        </div>
+
+                        <div class="response-section">
+                            <div class="response-title">Response</div>
+                            <div class="json-container">
+                                <div class="json-code">
+                                    { <span class="json-key">"status"</span>:
+                                    <span class="json-string">"success"</span>,
+                                    <span class="json-key">"message"</span>:
+                                    <span class="json-string"
+                                        >"Data kajian poster berhasil
+                                        diambil"</span
+                                    >, <span class="json-key">"data"</span>: [ {
+                                    <span class="json-key">"id"</span>:
+                                    <span class="json-number">1</span>,
+                                    <span class="json-key">"judul"</span>:
+                                    <span class="json-string"
+                                        >"Kajian Fiqh Muamalah"</span
+                                    >,
+                                    <span class="json-key">"deskripsi"</span>:
+                                    <span class="json-string"
+                                        >"Kajian tentang fiqh muamalah"</span
+                                    >,
+                                    <span class="json-key">"poster_url"</span>:
+                                    <span class="json-string"
+                                        >"http://domain.com/uploads/kajian-poster/poster.jpg"</span
+                                    >, <span class="json-key">"masjid"</span>: {
+                                    <span class="json-key">"id"</span>:
+                                    <span class="json-number">1</span>,
+                                    <span class="json-key">"nama"</span>:
+                                    <span class="json-string"
+                                        >"Masjid Al-Ikhlas"</span
+                                    >, <span class="json-key">"alamat"</span>:
+                                    <span class="json-string"
+                                        >"Jl. Contoh No. 123"</span
+                                    >
+                                    },
+                                    <span class="json-key">"total_jadwal"</span
+                                    >: <span class="json-number">2</span>,
+                                    <span class="json-key">"jadwal_kajian"</span
+                                    >: [ { <span class="json-key">"id"</span>:
+                                    <span class="json-number">1</span>,
+                                    <span class="json-key">"jam_mulai"</span>:
+                                    <span class="json-string">"19:00"</span>,
+                                    <span class="json-key">"jam_selesai"</span>:
+                                    <span class="json-string">"21:00"</span>,
+                                    <span class="json-key">"tanggal"</span>:
+                                    <span class="json-string">"2025-08-28"</span
+                                    >, <span class="json-key">"hari"</span>:
+                                    <span class="json-string">"Kamis"</span>,
+                                    <span class="json-key">"status"</span>:
+                                    <span class="json-string">"aktif"</span>,
+                                    <span class="json-key">"diperuntukan"</span
+                                    >: <span class="json-string">"Umum"</span>,
+                                    <span class="json-key">"ustadz"</span>: [ {
+                                    <span class="json-key">"id"</span>:
+                                    <span class="json-number">1</span>,
+                                    <span class="json-key">"nama_lengkap"</span
+                                    >:
+                                    <span class="json-string"
+                                        >"Ustadz Ahmad"</span
+                                    >
+                                    } ] } ] } ] }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Jadwal Kajian Endpoint -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <div class="endpoint-number">6</div>
+                        <div class="endpoint-title">
+                            Jadwal Kajian (Terpisah)
+                        </div>
+                    </div>
+                    <div class="endpoint-body">
+                        <div class="method-url">
+                            <span class="http-method">GET</span>
+                            <span class="endpoint-url"
+                                >/mobile/jadwal-kajian</span
+                            >
+                        </div>
+
+                        <div class="response-section">
+                            <div class="response-title">Response</div>
+                            <div class="json-container">
+                                <div class="json-code">
+                                    { <span class="json-key">"status"</span>:
+                                    <span class="json-string">"success"</span>,
+                                    <span class="json-key">"message"</span>:
+                                    <span class="json-string"
+                                        >"Data jadwal kajian berhasil
+                                        diambil"</span
+                                    >, <span class="json-key">"data"</span>: [ {
+                                    <span class="json-key">"id"</span>:
+                                    <span class="json-number">1</span>,
+                                    <span class="json-key">"jam_mulai"</span>:
+                                    <span class="json-string">"19:00"</span>,
+                                    <span class="json-key">"jam_selesai"</span>:
+                                    <span class="json-string">"21:00"</span>,
+                                    <span class="json-key">"tanggal"</span>:
+                                    <span class="json-string">"2025-08-28"</span
+                                    >, <span class="json-key">"hari"</span>:
+                                    <span class="json-string">"Kamis"</span>,
+                                    <span class="json-key">"status"</span>:
+                                    <span class="json-string">"aktif"</span>,
+                                    <span class="json-key">"diperuntukan"</span
+                                    >: <span class="json-string">"Umum"</span> }
+                                    ] }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kajian Rekaman Endpoint -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <div class="endpoint-number">7</div>
+                        <div class="endpoint-title">Kajian Rekaman</div>
+                    </div>
+                    <div class="endpoint-body">
+                        <div class="method-url">
+                            <span class="http-method">GET</span>
+                            <span class="endpoint-url"
+                                >/mobile/kajian-rekaman</span
+                            >
+                        </div>
+
+                        <div class="response-section">
+                            <div class="response-title">Response</div>
+                            <div class="json-container">
+                                <div class="json-code">
+                                    { <span class="json-key">"status"</span>:
+                                    <span class="json-string">"success"</span>,
+                                    <span class="json-key">"message"</span>:
+                                    <span class="json-string"
+                                        >"Data kajian rekaman berhasil
+                                        diambil"</span
+                                    >, <span class="json-key">"data"</span>: [ {
+                                    <span class="json-key">"id"</span>:
+                                    <span class="json-number">1</span>,
+                                    <span class="json-key">"judul"</span>:
+                                    <span class="json-string"
+                                        >"Kajian Tauhid"</span
+                                    >,
+                                    <span class="json-key">"deskripsi"</span>:
+                                    <span class="json-string"
+                                        >"Pembahasan mengenai tauhid"</span
+                                    >,
+                                    <span class="json-key">"video_url"</span>:
+                                    <span class="json-string"
+                                        >"https://youtube.com/watch?v=xxx"</span
+                                    >,
+                                    <span class="json-key">"thumbnail_url"</span
+                                    >:
+                                    <span class="json-string"
+                                        >"http://domain.com/uploads/thumbnails/thumb.jpg"</span
+                                    >, <span class="json-key">"durasi"</span>:
+                                    <span class="json-string">"01:30:00"</span>,
+                                    <span class="json-key">"kategori"</span>:
+                                    <span class="json-string">"Akidah"</span>,
+                                    <span class="json-key">"total_ustadz"</span
+                                    >: <span class="json-number">1</span>,
+                                    <span class="json-key">"ustadz"</span>: [ {
+                                    <span class="json-key">"id"</span>:
+                                    <span class="json-number">1</span>,
+                                    <span class="json-key">"nama_lengkap"</span
+                                    >:
+                                    <span class="json-string"
+                                        >"Ustadz Ahmad"</span
+                                    >
+                                    } ] } ] }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bacaan Endpoint -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <div class="endpoint-number">8</div>
+                        <div class="endpoint-title">Bacaan (dengan Detail)</div>
+                    </div>
+                    <div class="endpoint-body">
+                        <div class="method-url">
+                            <span class="http-method">GET</span>
+                            <span class="endpoint-url">/mobile/bacaan</span>
+                        </div>
+
+                        <div class="response-section">
+                            <div class="response-title">Response</div>
+                            <div class="json-container">
+                                <div class="json-code">
+                                    { <span class="json-key">"status"</span>:
+                                    <span class="json-string">"success"</span>,
+                                    <span class="json-key">"message"</span>:
+                                    <span class="json-string"
+                                        >"Data bacaan berhasil diambil"</span
+                                    >, <span class="json-key">"data"</span>: [ {
+                                    <span class="json-key">"id"</span>:
+                                    <span class="json-number">1</span>,
+                                    <span class="json-key">"judul"</span>:
+                                    <span class="json-string">"Doa Harian"</span
+                                    >, <span class="json-key">"type"</span>:
+                                    <span class="json-string">"doa"</span>,
+                                    <span class="json-key">"deskripsi"</span>:
+                                    <span class="json-string"
+                                        >"Kumpulan doa sehari-hari"</span
+                                    >,
+                                    <span class="json-key">"total_details"</span
+                                    >: <span class="json-number">3</span>,
+                                    <span class="json-key">"details"</span>: [ {
+                                    <span class="json-key">"id"</span>:
+                                    <span class="json-number">1</span>,
+                                    <span class="json-key">"arab"</span>:
+                                    <span class="json-string"
+                                        >"بِسْمِ اللَّهِ الرَّحْمَنِ
+                                        الرَّحِيمِ"</span
+                                    >, <span class="json-key">"latin"</span>:
+                                    <span class="json-string"
+                                        >"Bismillahirrahmanirrahim"</span
+                                    >,
+                                    <span class="json-key">"terjemahan"</span>:
+                                    <span class="json-string"
+                                        >"Dengan menyebut nama Allah Yang Maha
+                                        Pengasih lagi Maha Penyayang"</span
+                                    >, <span class="json-key">"sumber</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
