@@ -20,7 +20,7 @@ class DonasiController extends Controller
     public function getAllDonasi()
     {
         try {
-            $donasi = Donasi::select('id', 'judul', 'poster', 'nama_pic', 'keperluan', 'nominal', 'no_rekening', 'keterangan')
+            $donasi = Donasi::select('id', 'judul', 'poster', 'nama_pic', 'keperluan', 'nominal', 'no_rekening', 'keterangan', 'bank', 'nama_pemilik_rekening')
                 ->get()
                 ->map(function($item) {
                     return [
