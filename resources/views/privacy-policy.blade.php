@@ -102,7 +102,7 @@
 
     <h2>10. Kontak</h2>
     <p>Jika Anda memiliki pertanyaan, kekhawatiran, atau permintaan mengenai kebijakan privasi ini atau praktik data kami, silakan hubungi kami melalui:</p>
-    <p><strong>📧 Email</strong>: support@darazna.com<br>
+    <p><strong>📧 Email</strong>: admin@simuslim.sydemy.com<br>
     <strong>📱 WhatsApp</strong>: +62 812-3456-7890<br>
     <strong>🕐 Jam Operasional</strong>: Senin - Jumat, 09.00 - 17.00 WIB</p>
 

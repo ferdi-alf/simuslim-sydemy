@@ -8,11 +8,30 @@ use Illuminate\Http\Request;
 
 class SymuslimController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $bacaans = Bacaan::with('details')->get(); 
+        $query = Bacaan::with('details');
+    
+        // Filter by type
+        if ($request->filled('type') && in_array($request->type, ['doa', 'hadits', 'dzikir'])) {
+            $query->where('type', $request->type);
+        }
+    
+        // Search by judul or deskripsi
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('judul', 'like', "%$search%")
+                  ->orWhere('deskripsi', 'like', "%$search%");
+            });
+        }
+    
+        // Pagination (misal 5 data per halaman)
+        $bacaans = $query->paginate(5)->appends($request->all());
+    
         return view('dashboard.symuslim', compact('bacaans'));
     }
+
 
     public function getAllBacaan()
     {

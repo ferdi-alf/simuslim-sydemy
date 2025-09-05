@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PrivacyPolicyController;
 
 // p&p
-Route::get('/privacy-policy', [PrivacyPolicyController::class, 'index'])->name('privacy.policy');
+Route::get('/privacy', [PrivacyPolicyController::class, 'index'])->name('privacy.policy');
 
 
 Route::middleware('web', 'guest')->group(function() {
