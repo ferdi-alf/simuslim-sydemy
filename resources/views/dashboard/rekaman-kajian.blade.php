@@ -1,4 +1,5 @@
 @extends('layouts.dashboard-layouts')
+@section('title', 'Rekaman Kajian Page')
 
 @section('content')
     <x-fragments.form-modal id="add-kajian-rekaman-modal" title="Tambah Kajian Rekaman"

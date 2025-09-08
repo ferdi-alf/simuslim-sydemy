@@ -17,6 +17,7 @@ class JadwalKajian extends Model
         'hari',
         'status',
         'diperuntukan',
+        'link',
     ];
 
     public function kajian()

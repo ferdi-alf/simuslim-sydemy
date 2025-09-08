@@ -1,4 +1,5 @@
 @extends('layouts.dashboard-layouts')
+@section('title', 'User Page')
 
 @section('content')
     <x-fragments.form-modal id="add-user-modal" title="Tambah User" action="{{ route('user.store') }}">

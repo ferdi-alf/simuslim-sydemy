@@ -1,4 +1,5 @@
 @extends('layouts.dashboard-layouts')
+@section('title', 'Donasi Page')
 
 @section('content')
     <x-fragments.form-modal id="add-donasi-modal" title="Tambah Donasi" action="{{ route('donasi.store') }}">

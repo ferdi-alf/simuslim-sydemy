@@ -14,30 +14,45 @@
                         </path>
                     </svg>
                 </button>
-                <a href="https://flowbite.com" class="flex ms-2 md:me-24">
-                    <img src="{{ asset('images/logo.png') }}" class="h-10 me-3 border border-indigo-900 rounded-full"
+                
+                <a href="#" class="flex ms-2 md:me-24">
+                    <img src="{{ asset('images/logo.png') }}" class="h-10 me-3"
                         alt="Logo" />
-
+                    {{--
                     <p class="text-indigo-400 md:text-2xl text-lg font-extrabold">
                         Simuslim Sydemy
                     </p>
+                    --}}
                 </a>
 
             </div>
             <div class="flex items-center">
                 <div class="flex items-center ms-3">
-                    <div>
-                        <button type="button"
-                            class="flex bg-white/40 rounded-md p-2 space-x-1.5  shadow-md text-sm  items-center justify-center "
-                            aria-expanded="false" data-dropdown-toggle="dropdown-user">
-                            <span class="sr-only">Open user menu</span>
-                            <span class="text-gray-800  ">
-                                {{ Auth::user()->name }}</span>
+                    <button type="button"
+                        class="flex items-center bg-transparent rounded-md p-1 space-x-2 me-2"
+                        aria-expanded="false" data-dropdown-toggle="dropdown-user">
+                        {{--
+                        <img src="{{ asset('images/logo.png') }}" alt="profile"
+                            class="h-10 w-10 rounded-full border border-red-500" />
+                        --}}
+                        <div class="flex flex-col text-left">
+                            <span class="font-bold text-sm text-gray-800">
+                                {{ Auth::user()->name }}
+                            </span>
+                            <span class="text-xs text-gray-500 lowercase">
+                                {{ Auth::user()->email }}
+                            </span>
+                        </div>
+                    </button>
+                </div>
+
+
                             <i class="fa-solid fa-caret-down"></i>
                         </button>
                     </div>
-                    <div class="z-50 w-50  hidden text-base list-none bg-slate-100/45 divide-y divide-gray-100 rounded-sm shadow-sm "
-                        id="dropdown-user">
+                    <div class="z-50 w-50 hidden text-base list-none bg-white divide-y divide-gray-100 rounded-md shadow-md backdrop-blur-0"
+                    id="dropdown-user">
+                        {{--
                         <div class="px-4 py-3" role="none">
                             <p class="text-sm  text-gray-900 " role="none">
                                 {{ Auth::user()->name }}
@@ -47,21 +62,25 @@
 
                             </p>
                         </div>
-                        <ul class="py-1" role="none">
+                        --}}
+                        <ul class="py-1 bg-slate-100" role="none">
                             <li>
                                 <a href="{{ route('dashboard') }}"
                                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 "
                                     role="menuitem">Dashboard</a>
                             </li>
                             <li>
-                                <a href="" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 "
-                                    role="menuitem">Settings</a>
-                            </li>
-                            <li>
                                 <a href="{{ route('logout') }}"
                                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 "
                                     role="menuitem">Logout</a>
                             </li>
+                            {{--
+                            <li>
+                                <a href="" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 "
+                                    role="menuitem">Settings</a>
+                            </li>
+                            
+                            --}}
                         </ul>
                     </div>
                 </div>

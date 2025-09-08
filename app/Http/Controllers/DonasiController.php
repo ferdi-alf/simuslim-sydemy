@@ -20,7 +20,7 @@ class DonasiController extends Controller
     public function getAllDonasi()
     {
         try {
-            $donasi = Donasi::select('id', 'judul', 'poster', 'nama_pic', 'keperluan', 'nominal', 'no_rekening', 'keterangan')
+            $donasi = Donasi::select('id', 'judul', 'poster', 'nama_pic', 'keperluan', 'nominal', 'no_rekening', 'keterangan', 'bank', 'nama_pemilik_rekening')
                 ->get()
                 ->map(function($item) {
                     return [
@@ -166,7 +166,7 @@ class DonasiController extends Controller
             'bank' => $validated['bank'],
             'nama_pemilik_rekening' => $validated['nama_pemilik_rekening'],
             'keperluan' => $validated['keperluan'],
-            'nominal' => $finalNominalValue, 
+            'nominal' => $finalNominalValue, // Gunakan nilai yang sudah dibersihkan
             'no_rekening' => $validated['no_rekening'],
             'keterangan' => $validated['keterangan'],
         ]);

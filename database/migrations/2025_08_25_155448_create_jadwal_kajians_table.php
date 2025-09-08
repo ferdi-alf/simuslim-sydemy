@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('hari');
             $table->enum('status', ['belum dimulai', 'berjalan', 'selesai', 'liburkan']);
             $table->enum('diperuntukan', ['semua kaum muslim', 'ikhwan', 'akhwat']);
+            $table->string('link')->nullable();
             $table->timestamps();
         });
 

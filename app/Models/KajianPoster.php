@@ -17,6 +17,7 @@ class KajianPoster extends Model
         'poster',
         'penyelenggara',
         'alamat_manual',
+        'link'
     ];
 
     public function masjid()

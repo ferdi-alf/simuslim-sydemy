@@ -17,7 +17,7 @@ class MasjidController extends Controller
     {
         try {
             $masjid = Masjid::with(['kajianPosters' => function($query) {
-                $query->select('id', 'masjid_id', 'judul', 'poster', 'deskripsi');
+                $query->select('id', 'masjid_id', 'judul', 'poster');
             }])
             ->select('id', 'nama', 'alamat', 'maps', 'channels')
             ->get()
@@ -34,7 +34,7 @@ class MasjidController extends Controller
                             'id' => $kajian->id,
                             'judul' => $kajian->judul,
                             'poster_url' => $kajian->poster ? asset('uploads/kajian-poster/' . $kajian->poster) : null,
-                            'deskripsi' => $kajian->deskripsi
+                            // 'deskripsi' => $kajian->deskripsi
                         ];
                     })
                 ];

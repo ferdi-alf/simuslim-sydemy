@@ -29,13 +29,15 @@ class KajianRekamanController extends Controller
             $kajianRekaman = KajianRekaman::with([
                 'ustadzs:id,nama_lengkap'
             ])
-            ->select('id', 'judul', 'link',  'kategori')
+            ->select('id', 'judul', 'link as video_url', 'kategori')
             ->get()
             ->map(function($rekaman) {
                 return [
                     'id' => $rekaman->id,
                     'judul' => $rekaman->judul,
-                    'link' => $rekaman->link,
+                    'video_url' => $rekaman->video_url,
+                    // 'thumbnail_url' => $rekaman->thumbnail ? asset('uploads/thumbnails/' . $rekaman->thumbnail) : null,
+                    // 'durasi' => $rekaman->durasi,
                     'kategori' => $rekaman->kategori,
                     'total_ustadz' => $rekaman->ustadzs->count(),
                     'ustadz' => $rekaman->ustadzs->map(function($ustadz) {
@@ -46,6 +48,7 @@ class KajianRekamanController extends Controller
                     })
                 ];
             });
+
 
             return response()->json([
                 'status' => 'success',
@@ -79,6 +82,7 @@ class KajianRekamanController extends Controller
             'link' => $request->link,
         ]);
 
+        // Handle ustadz relationship
         if ($request->ustadz_ids) {
             $ustadzIds = [];
             foreach ($request->ustadz_ids as $ustadzData) {
@@ -86,10 +90,12 @@ class KajianRekamanController extends Controller
                 if (is_numeric($ustadzData) && Ustadz::find($ustadzData)) {
                     $ustadzIds[] = $ustadzData;
                 } else {
+                    // Check if an Ustadz with this name already exists
                     $existingUstadz = Ustadz::where('nama_lengkap', $ustadzData)->first();
                     if ($existingUstadz) {
                         $ustadzIds[] = $existingUstadz->id;
                     } else {
+                        // Create new Ustadz if no existing match is found
                         $newUstadz = Ustadz::create([
                             'nama_lengkap' => $ustadzData,
                             'alamat' => null,
@@ -127,6 +133,7 @@ class KajianRekamanController extends Controller
             'link' => $request->link,
         ]);
 
+        // Handle ustadz relationship
         if ($request->ustadz_ids) {
             $ustadzIds = [];
             foreach ($request->ustadz_ids as $ustadzData) {
@@ -134,10 +141,12 @@ class KajianRekamanController extends Controller
                 if (is_numeric($ustadzData) && Ustadz::find($ustadzData)) {
                     $ustadzIds[] = $ustadzData;
                 } else {
+                    // Check if an Ustadz with this name already exists
                     $existingUstadz = Ustadz::where('nama_lengkap', $ustadzData)->first();
                     if ($existingUstadz) {
                         $ustadzIds[] = $existingUstadz->id;
                     } else {
+                        // Create new Ustadz if no existing match is found
                         $newUstadz = Ustadz::create([
                             'nama_lengkap' => $ustadzData,
                             'alamat' => null,
@@ -159,7 +168,7 @@ class KajianRekamanController extends Controller
     public function destroy($id)
     {
         $kajianRekaman = KajianRekaman::findOrFail($id);
-        $kajianRekaman->ustadzs()->detach(); 
+        $kajianRekaman->ustadzs()->detach(); // Remove all relationships
         $kajianRekaman->delete();
 
         return redirect()->route('kajian-rekaman.index')->with(AlertHelper::success('Kajian rekaman berhasil dihapus', 'Success'));

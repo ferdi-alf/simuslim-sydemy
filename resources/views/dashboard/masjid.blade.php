@@ -1,4 +1,5 @@
 @extends('layouts.dashboard-layouts')
+@section('title', 'Masjid Page')
 
 @section('content')
     <x-fragments.form-modal id="add-masjid-modal" title="Tambah masjid" action="{{ route('masjid.store') }}">
