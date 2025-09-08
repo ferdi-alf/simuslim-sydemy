@@ -13,6 +13,7 @@ class Banner extends Model
         'banners',
         'judul',
         'kategori',
+        'deskripsi',
     ];
 
     public function getBannerHtmlAttribute()
@@ -54,4 +55,17 @@ class Banner extends Model
         }
     }
 
+    public function getShortDeskripsiAttribute()
+    {
+        if (strlen($this->deskripsi) > 50) {
+            return '<span>' . substr($this->deskripsi, 0, 50) . '...</span> 
+            <a href="#poster-modal-' . $this->id . '" 
+               data-modal-target="poster-modal-' . $this->id . '" 
+               data-modal-toggle="poster-modal-' . $this->id . '" 
+               class="text-indigo-600 hover:underline">
+               Read More
+            </a>';
+        }
+        return $this->deskripsi;
+    }
 }

@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Storage;
 
 class BannerController extends Controller
 {
-
     public function index()
     {
         $banners = Banner::all();
@@ -19,29 +18,32 @@ class BannerController extends Controller
     public function getAllBanners()
     {
         try {
-            $banners = Banner::select('id', 'banners', 'judul', 'kategori')
+            $banners = Banner::select('id', 'banners', 'judul', 'kategori', 'deskripsi')
                 ->get()
-                ->map(function($banner) {
+                ->map(function ($banner) {
                     return [
                         'id' => $banner->id,
                         'judul' => $banner->judul,
                         'kategori' => $banner->kategori,
-                        'banner_url' => $banner->banners ? asset('uploads/banners/' . $banner->banners) : asset('images/default-banner.jpg'),
+                        'deskripsi' => $banner->deskripsi,
+                        'banner_url' => $banner->banners
+                            ? asset('uploads/banners/' . $banner->banners)
+                            : asset('images/default-banner.jpg'),
                         'banner_html' => $banner->getBannerHtmlAttribute(),
-                        'initials' => $this->generateInitials($banner->judul)
+                        'initials' => $this->generateInitials($banner->judul),
                     ];
                 });
 
             return response()->json([
                 'status' => 'success',
                 'message' => 'Data banner berhasil diambil',
-                'data' => $banners
+                'data' => $banners,
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Terjadi kesalahan saat mengambil data banner',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -59,12 +61,12 @@ class BannerController extends Controller
         return empty($initials) ? 'B' : $initials;
     }
 
-    
     public function store(Request $request)
     {
         $validated = $request->validate([
             'judul' => 'required|string|max:255',
             'kategori' => 'required|in:kajian akbar/dauroh,kajian rutin,event,promosi,poster islami,social,donasi',
+            'deskripsi' => 'nullable|string',
             'banners' => 'required|image|mimes:jpeg,png,jpg,gif|max:5048',
         ]);
 
@@ -76,13 +78,13 @@ class BannerController extends Controller
             Banner::create([
                 'judul' => $validated['judul'],
                 'kategori' => $validated['kategori'],
+                'deskripsi' => $validated['deskripsi'] ?? null,
                 'banners' => $filename,
             ]);
         }
 
         return redirect()->route('banner.index')->with(AlertHelper::success('Banner berhasil ditambahkan', 'Success'));
     }
-
 
     public function update(Request $request, $id)
     {
@@ -91,12 +93,14 @@ class BannerController extends Controller
         $validated = $request->validate([
             'judul' => 'required|string|max:255',
             'kategori' => 'required|in:kajian akbar/dauroh,kajian rutin,event,promosi,poster islami,social,donasi',
+            'deskripsi' => 'nullable|string',
             'banners' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5048',
         ]);
 
         $data = [
             'judul' => $validated['judul'],
             'kategori' => $validated['kategori'],
+            'deskripsi' => $validated['deskripsi'] ?? $banner->deskripsi,
         ];
 
         if ($request->hasFile('banners')) {
@@ -116,7 +120,6 @@ class BannerController extends Controller
         return redirect()->route('banner.index')->with(AlertHelper::success('Banner berhasil diperbarui', 'Success'));
     }
 
-    
     public function destroy($id)
     {
         $banner = Banner::findOrFail($id);

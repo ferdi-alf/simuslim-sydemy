@@ -9,6 +9,7 @@ use App\Http\Controllers\MasjidController;
 use App\Http\Controllers\UstadzController;
 use App\Http\Controllers\KajianController;
 use App\Http\Controllers\KajianRekamanController;
+use App\Http\Controllers\PosterDakwahController;
 use App\Http\Controllers\SymuslimController;
 
 Route::prefix('v1/mobile/auth')->group(function () {
@@ -42,6 +43,9 @@ Route::prefix('v1/mobile')->middleware('mobile.api.security')->group(function ()
     
     // Kajian Rekaman endpoints
     Route::get('/kajian-rekaman', [KajianRekamanController::class, 'getAllKajianRekaman']);
+
+    // Poster Dakwah endpoints
+    Route::get('/posters', [PosterDakwahController::class, 'getAllPosters']);
     
     // Bacaan (Symuslim) endpoints
     Route::get('/bacaan', [SymuslimController::class, 'getAllBacaan']);

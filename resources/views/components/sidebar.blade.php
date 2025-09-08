@@ -16,6 +16,9 @@
                     colors="indigo">Kajian</x-fragments.sidebar-item>
                 <x-fragments.sidebar-item route="banner.index" icon="images"
                     colors="indigo">Banner</x-fragments.sidebar-item>
+                <x-fragments.sidebar-item route="poster.index" icon="images" colors="indigo">
+                    Poster Dakwah
+                </x-fragments.sidebar-item>
                 <x-fragments.sidebar-item route="donasi.index" icon="hand-holding-dollar"
                     colors="indigo">Donasi</x-fragments.sidebar-item>
                 <x-fragments.sidebar-item route="kajian-rekaman.index" icon="circle-play" colors="indigo">Rekaman
