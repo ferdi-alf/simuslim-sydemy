@@ -3,7 +3,7 @@
 
 @section('content')
     <x-fragments.form-modal id="add-kajian-modal" title="Tambah Kajian" action="{{ route('kajian.store') }}">
-        <div class="grid grid-cols-2 gap-2 ">
+        <div class="grid grid-cols-2 gap-2 overflow-auto h-96">
             <div class="col-span-2 ">
                 <label class="block text-sm font-medium text-gray-700 ">
                     Poster Kajian <span class="text-red-500">*</span>
@@ -56,7 +56,7 @@
                     </div>
 
                     <input type="file" x-ref="fileInput" name="poster" accept="image/*" class="hidden"
-                        @change="handleFileSelect($event)" required>
+                        @change="handleFileSelect($event)">
                 </div>
             </div>
             <x-fragments.text-field label="Judul Kajian" name="judul" required />
@@ -64,6 +64,14 @@
             <x-fragments.multiple-select label="Kategori" name="category_ids" :options="$categoriesOptions"
                 placeholder="Pilih atau ketik Kategori baru" required />
             <x-fragments.select-field label="Jenis Kajian" name="jenis" :options="['rutin' => 'Rutin', 'akbar/dauroh' => 'Akbar/Dauroh']" />
+            <div class="col-span-2">
+                <label for="keterangan">
+                    Masukan keterangan
+                </label>
+                <textarea id="keterangan" name="keterangan" rows="10"
+                    class="w-full border 2 border-gray-300 rounded-md px-3 py-2 h-28 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Masukkan Keterangan kajian"></textarea>
+            </div>
 
             <div class="col-span-2 ">
                 <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -107,21 +115,20 @@
         <x-fragments.form-modal id="modal-edit-kajian-{{ $kajian->id }}" title="Edit Kajian"
             action="{{ route('kajian.update', $kajian->id) }}" method="POST" enctype="multipart/form-data">
             @method('PUT')
-            <div class="grid grid-cols-2 gap-2">
+            <div class="grid grid-cols-2 gap-2 overflow-auto h-96">
                 <div class="col-span-2">
                     {{-- Upload Poster --}}
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                         Poster Kajian <span class="text-red-500">*</span>
                     </label>
-                    <div x-data="fileUpload('{{ $kajian->poster ? asset('uploads/kajian-poster/' . $kajian->poster) : '' }}')" 
-                        x-init="init()"
+                    <div x-data="fileUpload('{{ $kajian->poster ? asset('uploads/kajian-poster/' . $kajian->poster) : '' }}')" x-init="init()"
                         class="border-2 border-dashed border-gray-300 rounded-lg p-5 text-center hover:border-blue-400 transition-colors"
                         @dragover.prevent @drop.prevent="handleDrop($event)" @dragenter.prevent="isDragging = true"
                         @dragleave.prevent="isDragging = false" :class="{ 'border-blue-400 bg-blue-50': isDragging }">
-        
-                        {{-- Area saat tidak ada file yang dipilih dan tidak ada pratinjau --}}
+
                         <div x-show="!selectedFile && !previewImage">
-                            <svg class="mx-auto h-10 w-10 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                            <svg class="mx-auto h-10 w-10 text-gray-400" stroke="currentColor" fill="none"
+                                viewBox="0 0 48 48">
                                 <path
                                     d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
                                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
@@ -134,27 +141,22 @@
                                 </button>
                             </div>
                         </div>
-                        
-                        {{-- Area saat ada file yang dipilih atau pratinjau --}}
                         <div x-show="selectedFile || previewImage" class="text-left">
                             <div class="flex items-center justify-between bg-gray-50 p-3 rounded-md">
                                 <div class="flex items-center">
-                                    {{-- Preview gambar --}}
-                                    <img x-bind:src="previewImage" class="h-16 w-16 object-cover rounded mr-3" alt="Poster Preview" />
-                    
-                                    {{-- Nama file --}}
+                                    <img x-bind:src="previewImage" class="h-16 w-16 object-cover rounded mr-3"
+                                        alt="Poster Preview" />
                                     <div>
                                         <p class="text-sm font-medium text-gray-900"
-                                           x-text="selectedFile 
+                                            x-text="selectedFile 
                                                 ? selectedFile.name 
                                                 : (existingPoster ? existingPoster.split('/').pop() : 'No poster')">
                                         </p>
                                         <p class="text-xs text-gray-500"
-                                           x-text="selectedFile ? formatFileSize(selectedFile.size) : ''"></p>
+                                            x-text="selectedFile ? formatFileSize(selectedFile.size) : ''"></p>
                                     </div>
                                 </div>
-                    
-                                {{-- Tombol hapus --}}
+
                                 <button type="button" @click="removeFile()" class="text-red-500 hover:text-red-700">
                                     <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd"
@@ -164,24 +166,30 @@
                                 </button>
                             </div>
                         </div>
-        
+
                         <input type="file" x-ref="fileInput" name="poster" accept="image/*" class="hidden"
                             @change="handleFileSelect($event)">
-                        {{-- Input hidden untuk flag penghapusan poster --}}
                         <input type="hidden" name="delete_poster" x-bind:value="deletePoster ? 1 : 0">
                     </div>
                 </div>
-        
+
                 <x-fragments.text-field label="Judul Kajian" name="judul" required :value="$kajian->judul" />
                 <x-fragments.text-field label="Penyelenggara" name="penyelenggara" required :value="$kajian->penyelenggara" />
-                <x-fragments.multiple-select label="Kategori" name="category_ids" 
-                    :options="$categoriesOptions" 
-                    :value="$kajian->categories->pluck('id')->toArray()"
+                <x-fragments.multiple-select label="Kategori" name="category_ids" :options="$categoriesOptions" :value="$kajian->categories->pluck('id')->toArray()"
                     placeholder="Pilih atau ketik Kategori baru" required />
-                <x-fragments.select-field label="Jenis Kajian" name="jenis" 
-                    :options="['rutin' => 'Rutin', 'akbar/dauroh' => 'Akbar/Dauroh']" 
-                    :value="$kajian->jenis" />
-        
+                <x-fragments.select-field label="Jenis Kajian" name="jenis" :options="['rutin' => 'Rutin', 'akbar/dauroh' => 'Akbar/Dauroh']" :value="$kajian->jenis" />
+
+                <div class="col-span-2">
+                    <label for="keterangan">
+                        Masukan keterangan
+                    </label>
+                    <textarea id="keterangan" name="keterangan" rows="10"
+                        class="w-full border 2 border-gray-300 rounded-md px-3 py-2 h-28 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Masukkan Keterangan kajian">
+                        {{ old('keterangan', $kajian->keterangan) }}
+                    </textarea>
+                </div>
+
                 {{-- Link Kajian (untuk youtube channel utama) --}}
                 {{--
                 <div class="col-span-2">
@@ -194,12 +202,12 @@
                            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 --}}
-        
+
                 <div class="col-span-2 ">
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                         Lokasi Kajian <span class="text-red-500">*</span>
                     </label>
-        
+
                     <div x-data="{ lokasiType: '{{ $kajian->masjid_id ? 'masjid' : 'manual' }}' }" class="space-y-3">
                         <div class="flex space-x-4">
                             <label class="flex items-center">
@@ -211,7 +219,7 @@
                                 <span>Alamat Manual</span>
                             </label>
                         </div>
-        
+
                         <div x-show="lokasiType === 'masjid'" x-transition>
                             <select name="masjid_id"
                                 class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
@@ -240,12 +248,12 @@
         <x-fragments.form-modal id="add-jadwal-modal-{{ $kajian->id }}" title="Tambah Jadwal Kajian"
             action="{{ route('kajian.store-jadwal') }}">
             <input class="hidden" value="{{ $kajian->id }}" name="kajian_id" id="jadwal-kajian-id">
-        
+
             <div class="grid grid-cols-2 gap-4">
                 <div class="col-span-2">
                     <x-fragments.text-field label="Tanggal" name="tanggal" type="date" required />
                 </div>
-        
+
                 <div>
                     <label for="time" class="block mb-2 text-sm font-medium text-gray-900">Jam Mulai:</label>
                     <div class="relative">
@@ -262,7 +270,7 @@
                             required />
                     </div>
                 </div>
-        
+
                 <div>
                     <label for="time" class="block mb-2 text-sm font-medium text-gray-900">Jam Selesai:</label>
                     <div class="relative">
@@ -279,25 +287,26 @@
                             required />
                     </div>
                 </div>
-        
+
                 <x-fragments.select-field label="Status" name="status" :options="[
                     'belum dimulai' => 'Belum Dimulai',
                     'berjalan' => 'Berjalan',
                     'selesai' => 'Selesai',
                     'liburkan' => 'Liburkan',
                 ]" />
-        
+
                 <x-fragments.select-field label="Diperuntukan" name="diperuntukan" :options="[
                     'semua kaum muslim' => 'Semua Kaum Muslim',
                     'ikhwan' => 'Ikhwan',
                     'akhwat' => 'Akhwat',
                 ]" />
-        
+
                 {{-- link live --}}
                 <div class="col-span-2">
-                    <x-fragments.text-field label="Link" name="link" placeholder="Masukkan link YouTube / lainnya" required />
+                    <x-fragments.text-field label="Link" name="link" placeholder="Masukkan link YouTube / lainnya"
+                        required />
                 </div>
-        
+
                 <div class="md:col-span-2">
                     <x-fragments.multiple-select label="Ustadz" name="ustadz_ids" :options="$ustadzOptions"
                         placeholder="Pilih atau ketik nama ustadz baru" required />
@@ -372,15 +381,11 @@
                         'akhwat' => 'Akhwat',
                     ]"
                         :value="$jadwal->diperuntukan" />
-                        
+
                     {{-- link live --}}
                     <div class="col-span-2">
-                        <x-fragments.text-field 
-                        label="Link" 
-                        name="link" 
-                        placeholder="Masukkan link YouTube / lainnya" 
-                        :value="old('link', $jadwal->link)" 
-                        required />
+                        <x-fragments.text-field label="Link" name="link"
+                            placeholder="Masukkan link YouTube / lainnya" :value="old('link', $jadwal->link)" required />
 
                     </div>
 
@@ -392,6 +397,7 @@
             </x-fragments.form-modal>
         @endforeach
     @endforeach
+    {{-- ini table utama kajian --}}
     <div class="p-3 rounded-lg bg-white/25 shadow-lg backdrop-blur-3xl">
         <div class="flex justify-end mb-4">
             <x-fragments.modal-button target="add-kajian-modal" variant="indigo">
@@ -455,11 +461,18 @@
                                         <td class="px-4 py-3 whitespace-nowrap">
                                             <div class="flex items-center">
                                                 <div class="relative group">
-                                                    <img src="{{ asset('uploads/kajian-poster/' . $kajian->poster) }}"
-                                                        class="w-16 h-16 rounded-lg object-cover cursor-pointer transition-all duration-300 group-hover:ring-2 group-hover:ring-indigo-500"
-                                                        alt="{{ $kajian->judul }}"
-                                                        data-modal-target="poster-modal-{{ $kajian->id }}"
-                                                        data-modal-toggle="poster-modal-{{ $kajian->id }}">
+                                                    @switch($kajian->poster)
+                                                        @case(null)
+                                                            <span> - </span>
+                                                        @break
+
+                                                        @default
+                                                            <img src="{{ asset('uploads/kajian-poster/' . $kajian->poster) }}"
+                                                                class="w-16 h-16 rounded-lg object-cover cursor-pointer transition-all duration-300 group-hover:ring-2 group-hover:ring-indigo-500"
+                                                                alt="{{ $kajian->judul }}"
+                                                                data-modal-target="poster-modal-{{ $kajian->id }}"
+                                                                data-modal-toggle="poster-modal-{{ $kajian->id }}">
+                                                    @endswitch
 
                                                     <!-- Tooltip -->
                                                     <div
@@ -533,6 +546,9 @@
                             x-transition:leave-start="opacity-100 transform scale-100"
                             x-transition:leave-end="opacity-0 transform scale-95">
                             <div class="border-t border-gray-200 p-4 bg-gray-50/30">
+                                <div class="bg-gray-300/30 rounded-lg mx-10 my-2 p-3 border-l border-blue-500">
+                                    <p>{{ $kajian->keterangan }}</p>
+                                </div>
                                 <div class="flex justify-between items-center mb-4">
                                     <h4 class="font-medium text-gray-900 flex items-center">
                                         <i class="fa-solid fa-calendar-days mr-2 text-indigo-600"></i>
@@ -670,117 +686,115 @@
 
 
 
-                @empty
-                    <div class="text-center py-12 text-gray-500">
-                        <i class="fa-solid fa-mosque text-5xl mb-4 text-gray-300"></i>
-                        <p class="text-xl font-medium">Belum ada data kajian</p>
-                        <p class="text-sm text-gray-400 mt-1">Mulai dengan menambahkan kajian baru</p>
-                    </div>
-                @endforelse
-            </div>
-        </div>
-    </div>
-    @foreach ($kajians as $kajian)
-
-        <x-modal-layout id="poster-modal-{{ $kajian->id }}" title="Poster Kajian: {{ $kajian->judul }}"
-            :closable="true">
-            <div class="text-center w-full">
-                <img src="{{ asset('uploads/kajian-poster/' . $kajian->poster) }}"
-                    class="w-full max-h-96 object-contain mx-auto rounded-lg shadow-lg" alt="{{ $kajian->judul }}">
-
-                <div class="mt-4 p-3 bg-gray-50 rounded-lg">
-                    <h5 class="font-semibold text-gray-900 mb-1">{{ $kajian->judul }}</h5>
-                    <p class="text-sm text-gray-600">{{ $kajian->penyelenggara }}</p>
-                    <p class="text-sm text-gray-500">{{ $kajian->kategori }} • {{ ucfirst($kajian->jenis) }}
-                    </p>
+                    @empty
+                        <div class="text-center py-12 text-gray-500">
+                            <i class="fa-solid fa-mosque text-5xl mb-4 text-gray-300"></i>
+                            <p class="text-xl font-medium">Belum ada data kajian</p>
+                            <p class="text-sm text-gray-400 mt-1">Mulai dengan menambahkan kajian baru</p>
+                        </div>
+                    @endforelse
                 </div>
             </div>
-        </x-modal-layout>
-    @endforeach
+        </div>
+        @foreach ($kajians as $kajian)
 
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+            <x-modal-layout id="poster-modal-{{ $kajian->id }}" title="Poster Kajian: {{ $kajian->judul }}"
+                :closable="true">
+                <div class="text-center w-full">
+                    <img src="{{ asset('uploads/kajian-poster/' . $kajian->poster) }}"
+                        class="w-full max-h-96 object-contain mx-auto rounded-lg shadow-lg" alt="{{ $kajian->judul }}">
+
+                    <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+                        <h5 class="font-semibold text-gray-900 mb-1">{{ $kajian->judul }}</h5>
+                        <p class="text-sm text-gray-600">{{ $kajian->penyelenggara }}</p>
+                        <p class="text-sm text-gray-500">{{ $kajian->kategori }} • {{ ucfirst($kajian->jenis) }}
+                        </p>
+                    </div>
+                </div>
+            </x-modal-layout>
+        @endforeach
+
+        <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
 
 
-    <script>
-        document.addEventListener('alpine:init', () => {
-        Alpine.data('fileUpload', (existingPoster = '') => ({
-            isDragging: false,
-            selectedFile: null,
-            previewImage: null,
-            existingPoster: existingPoster,
-            deletePoster: false,
-            init() {
-                console.log('fileUpload init, existingPoster:', this.existingPoster);
-                if (this.existingPoster) {
-                    this.previewImage = this.existingPoster; // tampilkan poster lama
-                }
-            },
-            handleFileSelect(event) {
-                const file = event.target.files[0];
-                if (file && file.type.startsWith('image/')) {
-                    this.selectedFile = file;
-                    this.deletePoster = false;
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        this.previewImage = e.target.result;
-                    };
-                    reader.readAsDataURL(file);
-                }
-            },
-            handleDrop(event) {
-                const file = event.dataTransfer.files[0];
-                if (file && file.type.startsWith('image/')) {
-                    this.selectedFile = file;
-                    this.deletePoster = false;
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        this.previewImage = e.target.result;
-                    };
-                    reader.readAsDataURL(file);
-                    this.isDragging = false;
-                }
-            },
-            removeFile() {
-                this.selectedFile = null;
-                this.previewImage = null;
-                this.deletePoster = true;
-                this.$refs.fileInput.value = '';
-            },
-            formatFileSize(bytes) {
-                if (bytes === 0) return '0 Bytes';
-                const k = 1024;
-                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-                const i = Math.floor(Math.log(bytes) / Math.log(k));
-                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        <script>
+            document.addEventListener('alpine:init', () => {
+                Alpine.data('fileUpload', (existingPoster = '') => ({
+                    isDragging: false,
+                    selectedFile: null,
+                    previewImage: null,
+                    existingPoster: existingPoster,
+                    deletePoster: false,
+                    init() {
+                        console.log('fileUpload init, existingPoster:', this.existingPoster);
+                        if (this.existingPoster) {
+                            this.previewImage = this.existingPoster;
+                        }
+                    },
+                    handleFileSelect(event) {
+                        const file = event.target.files[0];
+                        if (file && file.type.startsWith('image/')) {
+                            this.selectedFile = file;
+                            this.deletePoster = false;
+                            const reader = new FileReader();
+                            reader.onload = (e) => {
+                                this.previewImage = e.target.result;
+                            };
+                            reader.readAsDataURL(file);
+                        }
+                    },
+                    handleDrop(event) {
+                        const file = event.dataTransfer.files[0];
+                        if (file && file.type.startsWith('image/')) {
+                            this.selectedFile = file;
+                            this.deletePoster = false;
+                            const reader = new FileReader();
+                            reader.onload = (e) => {
+                                this.previewImage = e.target.result;
+                            };
+                            reader.readAsDataURL(file);
+                            this.isDragging = false;
+                        }
+                    },
+                    removeFile() {
+                        this.selectedFile = null;
+                        this.previewImage = null;
+                        this.deletePoster = true;
+                        this.$refs.fileInput.value = '';
+                    },
+                    formatFileSize(bytes) {
+                        if (bytes === 0) return '0 Bytes';
+                        const k = 1024;
+                        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                        const i = Math.floor(Math.log(bytes) / Math.log(k));
+                        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+                    }
+                }));
+            });
+
+            function openAddJadwalModal(kajianId) {
+                document.getElementById('jadwal-kajian-id').value = kajianId;
+                const modal = document.getElementById('add-jadwal-modal');
+                const backdrop = modal.querySelector('.modal-backdrop') || modal;
+                backdrop.classList.remove('hidden');
             }
-            }));
-        });
 
+            function openEditJadwalModal(jadwalId, jadwalData) {
+                const form = document.querySelector('#edit-jadwal-modal form');
+                form.action = `{{ url('kajian/jadwal') }}/${jadwalId}`;
+                document.querySelector('#edit-jadwal-modal input[name="tanggal"]').value = jadwalData.tanggal;
+                document.querySelector('#edit-jadwal-modal select[name="hari"]').value = jadwalData.hari;
+                document.querySelector('#edit-jadwal-modal input[name="jam_mulai"]').value = jadwalData.jam_mulai;
+                document.querySelector('#edit-jadwal-modal input[name="jam_selesai"]').value = jadwalData.jam_selesai;
+                document.querySelector('#edit-jadwal-modal select[name="status"]').value = jadwalData.status;
+                document.querySelector('#edit-jadwal-modal select[name="diperuntukan"]').value = jadwalData.diperuntukan;
+                document.querySelector('#edit-jadwal-modal input[name="link"]').value = jadwalData.link ||
+                    '';
 
-        // Fungsi untuk membuka modal tambah jadwal
-        function openAddJadwalModal(kajianId) {
-            document.getElementById('jadwal-kajian-id').value = kajianId;
-            const modal = document.getElementById('add-jadwal-modal');
-            const backdrop = modal.querySelector('.modal-backdrop') || modal;
-            backdrop.classList.remove('hidden');
-        }
-
-        // Fungsi untuk membuka modal edit jadwal
-        function openEditJadwalModal(jadwalId, jadwalData) {
-        const form = document.querySelector('#edit-jadwal-modal form');
-        form.action = `{{ url('kajian/jadwal') }}/${jadwalId}`;
-        document.querySelector('#edit-jadwal-modal input[name="tanggal"]').value = jadwalData.tanggal;
-        document.querySelector('#edit-jadwal-modal select[name="hari"]').value = jadwalData.hari;
-        document.querySelector('#edit-jadwal-modal input[name="jam_mulai"]').value = jadwalData.jam_mulai;
-        document.querySelector('#edit-jadwal-modal input[name="jam_selesai"]').value = jadwalData.jam_selesai;
-        document.querySelector('#edit-jadwal-modal select[name="status"]').value = jadwalData.status;
-        document.querySelector('#edit-jadwal-modal select[name="diperuntukan"]').value = jadwalData.diperuntukan;
-        document.querySelector('#edit-jadwal-modal input[name="link"]').value = jadwalData.link || ''; // 🔥 tambahin ini
-    
-        const modal = document.getElementById('edit-jadwal-modal');
-        const backdrop = modal.querySelector('.modal-backdrop') || modal;
-        backdrop.classList.remove('hidden');
-        }
-    </script>
-@endsection
+                const modal = document.getElementById('edit-jadwal-modal');
+                const backdrop = modal.querySelector('.modal-backdrop') || modal;
+                backdrop.classList.remove('hidden');
+            }
+        </script>
+    @endsection

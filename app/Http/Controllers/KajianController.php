@@ -36,18 +36,21 @@ class KajianController extends Controller
                 'masjid:id,nama,alamat,maps',
                 'categories:id,nama', // ambil kategori
                 'jadwalKajians' => fn($q) => $q->with(['ustadzs:id,nama_lengkap'])
-                    ->select('id','kajian_id','jam_mulai','jam_selesai','tanggal','hari','status','diperuntukan','link')
+                    ->select('id','kajian_id','jam_mulai','jam_selesai','tanggal','hari','status','diperuntukan')
+                    ->orderBy('tanggal', 'asc') // urutkan berdasarkan tanggal
             ])
-            ->select('id','masjid_id','judul','jenis','poster','link') 
+            ->select('id','masjid_id','judul','jenis','poster','link','keterangan')
             ->get()
             ->map(function($kajian){
+                $hariTerdekat = $this->getHariTerdekat($kajian->jadwalKajians);
                 return [
                     'id' => $kajian->id,
                     'judul' => $kajian->judul,
-                    // 'deskripsi' => $kajian->deskripsi ?? null,
                     'jenis' => $kajian->jenis,
                     'link' => $kajian->link,
+                    'keterangan' => $kajian->keterangan,
                     'poster_url' => $kajian->poster ? asset('uploads/kajian-poster/'.$kajian->poster) : null,
+                    'hari_terdekat' => $hariTerdekat, 
                     'masjid' => [
                         'id' => $kajian->masjid->id ?? null,
                         'nama' => $kajian->masjid->nama ?? null,
@@ -67,7 +70,7 @@ class KajianController extends Controller
                         'hari'=>$j->hari,
                         'status'=>$j->status,
                         'diperuntukan'=>$j->diperuntukan,
-                        'link'=> $j->link,
+                        // 'link'=> $j->link,
                         'ustadz'=>$j->ustadzs->map(fn($u)=>[
                             'id'=>$u->id,
                             'nama_lengkap'=>$u->nama_lengkap
@@ -75,21 +78,43 @@ class KajianController extends Controller
                     ])
                 ];
             });
-    
+
             return response()->json([
-                'status'=>'success',
-                'message'=>'Data kajian poster berhasil diambil',
-                'data'=>$kajianPosters
+                'status' => 'success',
+                'data' => $kajianPosters
             ]);
+
         } catch (\Exception $e) {
             return response()->json([
-                'status'=>'error',
-                'message'=>'Terjadi kesalahan',
-                'error'=>$e->getMessage()
-            ],500);
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 
+    /**
+     * Mendapatkan hari terdekat berdasarkan jadwal kajian
+     */
+    private function getHariTerdekat($jadwalKajians)
+    {
+        if ($jadwalKajians->isEmpty()) {
+            return null;
+        }
+
+        $today = now()->startOfDay();
+        
+        $jadwalMendatang = $jadwalKajians
+            ->filter(function($jadwal) use ($today) {
+                return \Carbon\Carbon::parse($jadwal->tanggal)->startOfDay()->gte($today);
+            })
+            ->sortBy('tanggal');
+        
+        if ($jadwalMendatang->isNotEmpty()) {
+            return $jadwalMendatang->first()->hari;
+        }
+        
+        return null;
+    }
 
     public function getAllJadwalKajian()
     {
@@ -105,7 +130,7 @@ class KajianController extends Controller
                     'hari'=>$j->hari,
                     'status'=>$j->status,
                     'diperuntukan'=>$j->diperuntukan,
-                    'link' => $j->link,
+                    // 'link' => $j->link,
                     'kajian_poster'=>[
                         'id'=>$j->kajian->id ?? null,
                         'judul'=>$j->kajian->judul ?? null,
@@ -123,10 +148,10 @@ class KajianController extends Controller
     public function store(Request $request) {
         $request->validate([
             'judul'=>'required|string|max:255',
+            'keterangan'=>'required|string',
             'category_ids'=>'required|array|min:1',
             'category_ids.*'=>'string|max:255',
             'jenis'=>['required',Rule::in(['rutin','akbar/dauroh'])],
-            'poster'=>'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             'penyelenggara'=>'required|string|max:255',
             'masjid_id'=>'nullable|exists:masjids,id',
             'alamat_manual'=>'nullable|string',
@@ -150,6 +175,7 @@ class KajianController extends Controller
         $kajian=KajianPoster::create([
             'masjid_id'=>$request->masjid_id,
             'judul'=>$request->judul,
+            'keterangan'=>$request->keterangan,
             'jenis'=>$request->jenis,
             'poster'=>$posterFileName,
             'penyelenggara'=>$request->penyelenggara,
@@ -167,10 +193,10 @@ class KajianController extends Controller
 
         $request->validate([
             'judul'=>'required|string|max:255',
+            'keterangan'=>'required|string',
             'category_ids'=>'required|array|min:1',
             'category_ids.*'=>'string|max:255',
             'jenis'=>['required',Rule::in(['rutin','akbar/dauroh'])],
-            'poster'=>'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'penyelenggara'=>'required|string|max:255',
             'masjid_id'=>'nullable|exists:masjids,id',
             'alamat_manual'=>'nullable|string',
@@ -187,6 +213,7 @@ class KajianController extends Controller
         $updateData=[
             'masjid_id'=>$request->masjid_id,
             'judul'=>$request->judul,
+            'keterangan'=>$request->keterangan,
             'jenis'=>$request->jenis,
             'link' => $request->link,
             'penyelenggara'=>$request->penyelenggara,
@@ -253,7 +280,7 @@ class KajianController extends Controller
             'link'=> 'nullable|url'
         ]);
 
-        $dayMap=['Monday'=>'Senin','Tuesday'=>'Selasa','Wednesday'=>'Rabu','Thursday'=>'Kamis','Friday'=>'Jumat','Saturday'=>'Sabtu','Sunday'=>'Minggu'];
+        $dayMap=['Monday'=>'Senin','Tuesday'=>'Selasa','Wednesday'=>'Rabu','Thursday'=>'Kamis','Friday'=>'Jumat','Saturday'=>'Sabtu','Sunday'=>'Ahad'];
         $hari=$dayMap[Carbon::parse($request->tanggal)->format('l')];
 
         $jadwal=JadwalKajian::create([

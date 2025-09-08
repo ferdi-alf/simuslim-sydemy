@@ -13,6 +13,7 @@ class KajianPoster extends Model
     protected $fillable = [
         'masjid_id',
         'judul',
+        'keterangan',
         'jenis',
         'poster',
         'penyelenggara',
