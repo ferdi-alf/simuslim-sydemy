@@ -4,8 +4,30 @@
 @section('content')
 <x-fragments.form-modal id="add-banner-modal" title="Tambah Banner" action="{{ route('banner.store') }}">
     <!-- Upload Banner -->
-    <div x-data="fileUpload()" ...>
-        <!-- kode upload file tetap -->
+    <div x-data="fileUpload()"
+        class="border-2 border-dashed border-gray-300 rounded-lg p-5 text-center hover:border-blue-400 transition-colors"
+        @dragover.prevent @drop.prevent="handleDrop($event)"
+        @dragenter.prevent="isDragging = true"
+        @dragleave.prevent="isDragging = false"
+        :class="{ 'border-blue-400 bg-blue-50': isDragging }">
+
+        {{-- Saat belum ada file --}}
+        <div x-show="!selectedFile">
+            <p class="text-sm text-gray-600">Drop file Banner di sini atau</p>
+            <button type="button" @click="$refs.fileInput.click()" class="mt-2 text-blue-600 hover:text-blue-500 font-medium">
+                klik untuk memilih file
+            </button>
+        </div>
+
+        {{-- Saat ada file terpilih --}}
+        <div x-show="selectedFile" class="mt-3">
+            <p class="text-sm font-medium" x-text="selectedFile ? selectedFile.name : ''"></p>
+            <p class="text-xs text-gray-500" x-text="selectedFile ? formatFileSize(selectedFile.size) : ''"></p>
+            <button type="button" @click="removeFile()" class="text-red-500 mt-2">Hapus</button>
+        </div>
+
+        <input type="file" x-ref="fileInput" name="banners" accept="image/*"
+            class="hidden" @change="handleFileSelect($event)" required>
     </div>
 
     <!-- Input Judul -->

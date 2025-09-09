@@ -273,7 +273,7 @@ class KajianController extends Controller
             'jam_mulai'=>'required|date_format:H:i',
             'jam_selesai'=>'required|date_format:H:i|after:jam_mulai',
             'tanggal'=>'required|date',
-            'status'=>['required',Rule::in(['belum dimulai','berjalan','selesai','liburkan'])],
+            'status' => ['required', Rule::in(array_keys(JadwalKajian::statusOptions()))],
             'diperuntukan'=>['required',Rule::in(['semua kaum muslim','ikhwan','akhwat'])],
             'ustadz_ids'=>'nullable|array',
             'ustadz_ids.*'=>'nullable|string',
@@ -323,14 +323,14 @@ class KajianController extends Controller
             'jam_mulai'=>'required|date_format:H:i',
             'jam_selesai'=>'required|date_format:H:i|after:jam_mulai',
             'tanggal'=>'required|date',
-            'status'=>['required',Rule::in(['belum dimulai','berjalan','selesai','liburkan'])],
+            'status' => ['required', Rule::in(array_keys(JadwalKajian::statusOptions()))],
             'diperuntukan'=>['required',Rule::in(['semua kaum muslim','ikhwan','akhwat'])],
             'ustadz_ids'=>'nullable|array',
             'ustadz_ids.*'=>'nullable|string',
             'link'=> 'nullable|url',
         ]);
 
-        $dayMap=['Monday'=>'Senin','Tuesday'=>'Selasa','Wednesday'=>'Rabu','Thursday'=>'Kamis','Friday'=>'Jumat','Saturday'=>'Sabtu','Sunday'=>'Minggu'];
+        $dayMap=['Monday'=>'Senin','Tuesday'=>'Selasa','Wednesday'=>'Rabu','Thursday'=>'Kamis','Friday'=>'Jumat','Saturday'=>'Sabtu','Sunday'=>'Ahad'];
         $hari=$dayMap[Carbon::parse($request->tanggal)->format('l')];
 
         $jadwal->update([

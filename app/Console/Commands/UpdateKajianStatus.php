@@ -29,41 +29,44 @@ class UpdateKajianStatus extends Command
     public function handle()
     {
         $now = Carbon::now();
-        
+
         Log::info("Scheduler running at: " . $now->format('Y-m-d H:i:s'));
+
+        // Cari kajian yang akan segera dimulai (0–15 menit sebelum jam mulai)
         $berjalan = JadwalKajian::whereDate('tanggal', $now->toDateString())
-            ->where(function($query) use ($now) {
+            ->where(function ($query) use ($now) {
                 $query->whereRaw("TIMESTAMPDIFF(MINUTE, ?, CONCAT(tanggal, ' ', jam_mulai)) <= 15", [$now])
                       ->whereRaw("TIMESTAMPDIFF(MINUTE, ?, CONCAT(tanggal, ' ', jam_mulai)) >= 0", [$now]);
             })
-            ->where('status', '!=', 'berjalan')
-            ->where('status', '!=', 'selesai')
+            ->where('status', '!=', JadwalKajian::STATUS_BERJALAN)
+            ->where('status', '!=', JadwalKajian::STATUS_SELESAI)
             ->get();
 
-        Log::info("Found " . $berjalan->count() . " kajian to update to 'berjalan'");
-        
+        Log::info("Found " . $berjalan->count() . " kajian to update to '" . JadwalKajian::STATUS_BERJALAN . "'");
+
         foreach ($berjalan as $jadwal) {
             $jadwalTime = Carbon::parse($jadwal->tanggal . ' ' . $jadwal->jam_mulai);
             $diffMinutes = $now->diffInMinutes($jadwalTime, false);
-            
+
             Log::info("Jadwal ID {$jadwal->id}: {$jadwalTime->format('Y-m-d H:i:s')}, diff: {$diffMinutes} minutes");
-            
+
             if ($diffMinutes <= 15 && $diffMinutes >= 0) {
-                $jadwal->update(['status' => 'berjalan']);
-                Log::info("Updated kajian ID {$jadwal->id} to 'berjalan'");
+                $jadwal->update(['status' => JadwalKajian::STATUS_BERJALAN]);
+                Log::info("Updated kajian ID {$jadwal->id} to '" . JadwalKajian::STATUS_BERJALAN . "'");
             }
         }
 
+        // Update status kajian yang sudah selesai
         $selesai = JadwalKajian::whereDate('tanggal', $now->toDateString())
             ->whereRaw("CONCAT(tanggal, ' ', jam_selesai) <= ?", [$now])
-            ->where('status', '!=', 'selesai')
-            ->update(['status' => 'selesai']);
+            ->where('status', '!=', JadwalKajian::STATUS_SELESAI)
+            ->update(['status' => JadwalKajian::STATUS_SELESAI]);
 
         if ($selesai > 0) {
-            Log::info("[$now] $selesai kajian diupdate menjadi 'selesai'");
+            Log::info("[$now] $selesai kajian diupdate menjadi '" . JadwalKajian::STATUS_SELESAI . "'");
         }
 
         $this->info("Scheduler dijalankan pada $now");
-        $this->info("Updated {$berjalan->count()} kajian to 'berjalan' and $selesai kajian to 'selesai'");
+        $this->info("Updated {$berjalan->count()} kajian to '" . JadwalKajian::STATUS_BERJALAN . "' and $selesai kajian to '" . JadwalKajian::STATUS_SELESAI . "'");
     }
 }
