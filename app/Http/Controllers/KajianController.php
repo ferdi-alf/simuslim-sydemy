@@ -36,7 +36,7 @@ class KajianController extends Controller
                 'masjid:id,nama,alamat,maps',
                 'categories:id,nama', // ambil kategori
                 'jadwalKajians' => fn($q) => $q->with(['ustadzs:id,nama_lengkap'])
-                    ->select('id','kajian_id','jam_mulai','jam_selesai','tanggal','hari','status','diperuntukan')
+                    ->select('id','kajian_id','jam_mulai','jam_selesai','tanggal','hari','status','diperuntukan', 'link')
                     ->orderBy('tanggal', 'asc') // urutkan berdasarkan tanggal
             ])
             ->select('id','masjid_id','judul','jenis','poster','link','keterangan')
