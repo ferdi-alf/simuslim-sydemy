@@ -9,6 +9,13 @@ class JadwalKajian extends Model
 {
     use HasFactory;
 
+    protected $guarded = [];
+
+    const STATUS_BELUM_DIMULAI = 'belum dimulai';
+    const STATUS_BERJALAN = 'Sedang berjalan';
+    const STATUS_SELESAI = 'selesai';
+    const STATUS_DILIBURKAN = 'Diliburkan';
+
     protected $fillable = [
         'kajian_id',
         'jam_mulai',
@@ -28,5 +35,16 @@ class JadwalKajian extends Model
     public function ustadzs()
     {
         return $this->belongsToMany(Ustadz::class, 'jadwal_kajian_ustadz');
+    }
+
+    // <<< Tambahan ini
+    public static function statusOptions()
+    {
+        return [
+            self::STATUS_BELUM_DIMULAI => 'Belum Dimulai',
+            self::STATUS_BERJALAN => 'Sedang Berjalan',
+            self::STATUS_SELESAI => 'Selesai',
+            self::STATUS_DILIBURKAN => 'Diliburkan',
+        ];
     }
 }
