@@ -47,7 +47,7 @@ class KajianController extends Controller
                     'id' => $kajian->id,
                     'judul' => $kajian->judul,
                     'jenis' => $kajian->jenis,
-                    // 'link' => $kajian->link,
+                    'link' => $kajian->link,
                     'keterangan' => $kajian->keterangan,
                     'poster_url' => $kajian->poster ? asset('uploads/kajian-poster/'.$kajian->poster) : null,
                     'hari_terdekat' => $hariTerdekat, 
@@ -70,7 +70,7 @@ class KajianController extends Controller
                         'hari'=>$j->hari,
                         'status'=>$j->status,
                         'diperuntukan'=>$j->diperuntukan,
-                        // 'link'=> $j->link,
+                        'link'=> $j->link,
                         'ustadz'=>$j->ustadzs->map(fn($u)=>[
                             'id'=>$u->id,
                             'nama_lengkap'=>$u->nama_lengkap
