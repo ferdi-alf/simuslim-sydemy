@@ -21,9 +21,23 @@ class KajianPoster extends Model
         'link'
     ];
 
+    protected $casts = [
+        'is_archive' => 'boolean'
+    ];
+
     public function masjid()
     {
         return $this->belongsTo(Masjid::class);
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_archive', false);
+    }
+
+    public function scopeArchived($query)
+    {
+        return $query->where('is_archive', true);
     }
 
     public function jadwalKajians()

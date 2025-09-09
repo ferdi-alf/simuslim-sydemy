@@ -105,6 +105,10 @@ Route::middleware(['auth', 'deny.roles:jamaah'])->group(function () {
         Route::put('/jadwal/{id}', 'updateJadwal')->name('update-jadwal');
         Route::delete('/jadwal/{id}', 'destroyJadwal')->name('destroy-jadwal');
         Route::get('/search-ustadz', 'searchUstadz')->name('search-ustadz');
+        
+        Route::put('/archive-kajian/{id}', 'archive')->name('archive');
+        Route::post('/kajian-poster/{id}/unarchive',  'unarchive')->name('unarchive');
+
     });
 
 

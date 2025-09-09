@@ -32,12 +32,21 @@ class JadwalKajian extends Model
         return $this->belongsTo(KajianPoster::class, 'kajian_id');
     }
 
+    public function kajianRekamans()
+    {
+        return $this->hasMany(KajianRekaman::class);
+    }
+
     public function ustadzs()
     {
         return $this->belongsToMany(Ustadz::class, 'jadwal_kajian_ustadz');
     }
 
-    // <<< Tambahan ini
+    public function kajianPoster()
+    {
+        return $this->belongsTo(KajianPoster::class, 'kajian_id');
+    }
+
     public static function statusOptions()
     {
         return [

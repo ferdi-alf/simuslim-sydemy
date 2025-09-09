@@ -9,13 +9,24 @@ use App\Models\JadwalKajian;
 use App\Models\Ustadz;
 use App\Models\Masjid;
 use Carbon\Carbon;
+use Illuminate\Console\View\Components\Alert;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
 class KajianController extends Controller
 {
-    public function index() {
+    public function index() 
+    {
+        // Data kajian aktif (tidak diarsipkan)
         $kajians = KajianPoster::with(['masjid', 'jadwalKajians.ustadzs', 'categories'])
+            ->where('is_archive', false)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Data kajian yang diarsipkan
+        $kajianArchive = KajianPoster::with(['masjid', 'jadwalKajians.ustadzs', 'categories'])
+            ->where('is_archive', true)
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -26,7 +37,7 @@ class KajianController extends Controller
         $categories = Category::active()->orderBy('nama')->get();
         $categoriesOptions = $categories->map(fn($c) => ['value'=>$c->id, 'label'=>$c->nama])->toArray();
 
-        return view('dashboard.kajian', compact('kajians','masjids','ustadzOptions','categoriesOptions'));
+        return view('dashboard.kajian', compact('kajians', 'kajianArchive', 'masjids','ustadzOptions','categoriesOptions'));
     }
 
     public function getAllKajianPosters()
@@ -34,11 +45,12 @@ class KajianController extends Controller
         try {
             $kajianPosters = KajianPoster::with([
                 'masjid:id,nama,alamat,maps',
-                'categories:id,nama', // ambil kategori
+                'categories:id,nama', 
                 'jadwalKajians' => fn($q) => $q->with(['ustadzs:id,nama_lengkap'])
                     ->select('id','kajian_id','jam_mulai','jam_selesai','tanggal','hari','status','diperuntukan', 'link')
-                    ->orderBy('tanggal', 'asc') // urutkan berdasarkan tanggal
+                    ->orderBy('tanggal', 'asc') 
             ])
+            ->where('is_archive', false)
             ->select('id','masjid_id','judul','jenis','poster','link','keterangan')
             ->get()
             ->map(function($kajian){
@@ -92,34 +104,13 @@ class KajianController extends Controller
         }
     }
 
-    /**
-     * Mendapatkan hari terdekat berdasarkan jadwal kajian
-     */
-    private function getHariTerdekat($jadwalKajians)
-    {
-        if ($jadwalKajians->isEmpty()) {
-            return null;
-        }
-
-        $today = now()->startOfDay();
-        
-        $jadwalMendatang = $jadwalKajians
-            ->filter(function($jadwal) use ($today) {
-                return \Carbon\Carbon::parse($jadwal->tanggal)->startOfDay()->gte($today);
-            })
-            ->sortBy('tanggal');
-        
-        if ($jadwalMendatang->isNotEmpty()) {
-            return $jadwalMendatang->first()->hari;
-        }
-        
-        return null;
-    }
-
     public function getAllJadwalKajian()
     {
         try {
             $jadwalKajian = JadwalKajian::with(['kajian:id,judul,poster','ustadzs:id,nama_lengkap'])
+                ->whereHas('kajian', function($query) {
+                    $query->where('is_archive', false); 
+                })
                 ->select('id','kajian_id','jam_mulai','jam_selesai','tanggal','hari','status','diperuntukan','link')
                 ->get()
                 ->map(fn($j)=>[
@@ -144,6 +135,70 @@ class KajianController extends Controller
             return response()->json(['status'=>'error','message'=>'Terjadi kesalahan','error'=>$e->getMessage()],500);
         }
     }
+
+
+
+    public function archive($id)
+    {
+        try {
+            $kajianPoster = KajianPoster::findOrFail($id);
+            
+       
+            $kajianPoster->is_archive = true;
+            $saveResult = $kajianPoster->save();
+            
+            Log::info("Hasil save", [
+                'save_result' => $saveResult,
+                'is_archive_after_save' => $kajianPoster->is_archive,
+                'updated_data' => $kajianPoster->fresh()->toArray() 
+            ]);
+            
+            
+
+            return redirect()->back()->with(AlertHelper::success('Kajian poster berhasil diarsipkan', 'Success'));
+        } catch (\Exception $e) {
+            Log::error("Error saat archive", [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return redirect()->back()->with(AlertHelper::error('Terjadi kesalahan saat mengarsipkan kajian poster', 'Error'));
+        }
+    }
+
+    public function unarchive($id)
+    {
+        try {
+            $kajianPoster = KajianPoster::findOrFail($id);
+            $kajianPoster->is_archive = false;
+            $saveResult = $kajianPoster->save();
+
+            return redirect()->back()->with(AlertHelper::success('Kajian poster berhasil dikembalikan dari arsip', 'Success'));
+        } catch (\Exception $e) {
+            return redirect()->back()->with(AlertHelper::error('Terjadi kesalahan saat mengembalikan kajian poster dari arsip', 'Error'));
+        }
+    }
+
+    private function getHariTerdekat($jadwalKajians)
+    {
+        if ($jadwalKajians->isEmpty()) {
+            return null;
+        }
+
+        $today = now()->startOfDay();
+        
+        $jadwalMendatang = $jadwalKajians
+            ->filter(function($jadwal) use ($today) {
+                return \Carbon\Carbon::parse($jadwal->tanggal)->startOfDay()->gte($today);
+            })
+            ->sortBy('tanggal');
+        
+        if ($jadwalMendatang->isNotEmpty()) {
+            return $jadwalMendatang->first()->hari;
+        }
+        
+        return null;
+    }  
+
 
     public function store(Request $request) {
         $request->validate([

@@ -5,6 +5,8 @@
     'viewAction' => null,
     'deleteMessage' => null,
     'showView' => true,
+    'archiveRoute' => null,
+    'unArchiveRoute' => null,
 ])
 
 <div class="flex space-x-2">
@@ -28,8 +30,17 @@
         </x-fragments.modal-button>
     @endif
 
+    @if ($archiveRoute)
+        <x-fragments.archive-button :url="$archiveRoute" title="Arsipkan Data"
+            message="Yakin ingin mengarsipkan data ini?" />
+    @endif
+    @if ($unArchiveRoute)
+        <x-fragments.publish-button :url="$unArchiveRoute" title="Publish Data"
+            message="Yakin ingin mempulish kembali data ini?" />
+    @endif
     @if ($deleteRoute)
         <x-fragments.delete-button :url="$deleteRoute" title="Hapus Data" :message="$deleteMessage ?? 'Yakin ingin menghapus data ini?'" />
     @endif
+
 
 </div>
