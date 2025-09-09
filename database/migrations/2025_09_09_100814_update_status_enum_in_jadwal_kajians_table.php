@@ -1,27 +1,34 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up()
+    public function up(): void
     {
-        // Ubah ENUM status jadi versi terbaru dengan tambahan 'Diliburkan'
-        DB::statement("
-            ALTER TABLE jadwal_kajians 
-            MODIFY status ENUM('belum dimulai', 'Sedang berjalan', 'selesai', 'Diliburkan') 
-            NOT NULL DEFAULT 'belum dimulai'
-        ");
+        // Step 1: update semua status yang nggak sesuai ENUM baru
+        DB::table('jadwal_kajians')
+            ->whereNotIn('status', ['belum dimulai', 'Sedang berjalan', 'selesai', 'Diliburkan'])
+            ->update(['status' => 'belum dimulai']); // ganti sesuai kebutuhan
+
+        // Step 2: modify kolom ENUM
+        Schema::table('jadwal_kajians', function (Blueprint $table) {
+            $table->enum('status', ['belum dimulai', 'Sedang berjalan', 'selesai', 'Diliburkan'])
+                ->default('belum dimulai')
+                ->change();
+        });
     }
 
-    public function down()
+    public function down(): void
     {
-        // Kembalikan ke versi enum lama tanpa 'Diliburkan'
-        DB::statement("
-            ALTER TABLE jadwal_kajians 
-            MODIFY status ENUM('belum dimulai', 'Sedang berjalan', 'selesai') 
-            NOT NULL DEFAULT 'belum dimulai'
-        ");
+        // Jika rollback, bisa kembalikan ke ENUM lama
+        Schema::table('jadwal_kajians', function (Blueprint $table) {
+            $table->enum('status', ['belum dimulai', 'Sedang berjalan', 'selesai'])
+                ->default('belum dimulai')
+                ->change();
+        });
     }
 };
