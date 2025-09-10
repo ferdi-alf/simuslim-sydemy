@@ -8,7 +8,7 @@
     @csrf
     <button data-tooltip-target="tooltip-default" type="button" onclick="confirmArchive(this)"
         data-title="{{ $title }}" data-message="{{ $message }}"
-        class="inline-flex items-center p-3 text-xs font-medium cursor-pointer text-cyan-600 bg-cyan-100 rounded-md hover:bg-cyan-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 transition-colors duration-200">
+        class="inline-flex items-center p-3 text-xs font-medium cursor-pointer text-cyan-600 bg-cyan-100 rounded-md hover:bg-cyan-200 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-1 transition-colors duration-200">
         <i class="fa-solid fa-arrow-up-from-bracket"></i>
     </button>
 
@@ -22,7 +22,7 @@
 <script>
     function confirmArchive(button) {
         const form = button.closest('form');
-        const title = button.getAttribute('data-title') || 'Arsipkan';
+        const title = button.getAttribute('data-title') || 'Publish';
         const message = button.getAttribute('data-message') || 'Yakin ingin mempublish data ini?';
 
         Swal.fire({
@@ -32,7 +32,7 @@
             showCancelButton: true,
             confirmButtonColor: '#d33',
             cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Ya, Publish!',
+            confirmButtonText: 'Submit',
             cancelButtonText: 'Batal'
         }).then((result) => {
             if (result.isConfirmed) {

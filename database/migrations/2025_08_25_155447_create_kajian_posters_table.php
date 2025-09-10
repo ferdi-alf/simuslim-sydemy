@@ -19,7 +19,7 @@ return new class extends Migration
             $table->enum('jenis', ['rutin', 'akbar/dauroh']);
             $table->string('poster');
             $table->string('penyelenggara'); 
-            $table->string('alamat_manual')->nullable(); // jika tidak di masjid
+            $table->string('alamat_manual')->nullable(); 
             $table->timestamps();
         });
 

@@ -18,11 +18,13 @@ class KajianPoster extends Model
         'poster',
         'penyelenggara',
         'alamat_manual',
-        'link'
+        'link',
+        'is_draft'
     ];
 
     protected $casts = [
-        'is_archive' => 'boolean'
+        'is_archive' => 'boolean',
+        'is_draft' => 'boolean'
     ];
 
     public function masjid()

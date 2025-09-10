@@ -9,7 +9,7 @@
     @method('PUT')
     <button data-tooltip-target="tooltip-default" type="button" onclick="confirmArchive(this)"
         data-title="{{ $title }}" data-message="{{ $message }}"
-        class="inline-flex items-center p-3 text-xs font-medium cursor-pointer text-yellow-600 bg-yellow-100 rounded-md hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 transition-colors duration-200">
+        class="inline-flex items-center p-3 text-xs font-medium cursor-pointer text-yellow-600 bg-yellow-100 rounded-md hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-1 transition-colors duration-200">
         <i class="fa-solid fa-box-archive"></i>
     </button>
 
@@ -33,7 +33,7 @@
             showCancelButton: true,
             confirmButtonColor: '#d33',
             cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Ya, Arsipkan!',
+            confirmButtonText: 'Submit',
             cancelButtonText: 'Batal'
         }).then((result) => {
             if (result.isConfirmed) {

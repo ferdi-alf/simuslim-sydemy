@@ -6,7 +6,7 @@
     'deleteMessage' => null,
     'showView' => true,
     'archiveRoute' => null,
-    'unArchiveRoute' => null,
+    'publish' => null,
 ])
 
 <div class="flex space-x-2">
@@ -34,8 +34,8 @@
         <x-fragments.archive-button :url="$archiveRoute" title="Arsipkan Data"
             message="Yakin ingin mengarsipkan data ini?" />
     @endif
-    @if ($unArchiveRoute)
-        <x-fragments.publish-button :url="$unArchiveRoute" title="Publish Data"
+    @if ($publish)
+        <x-fragments.publish-button :url="$publish" title="Publish Data"
             message="Yakin ingin mempulish kembali data ini?" />
     @endif
     @if ($deleteRoute)

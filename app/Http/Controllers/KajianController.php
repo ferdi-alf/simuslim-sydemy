@@ -11,6 +11,7 @@ use App\Models\Masjid;
 use Carbon\Carbon;
 use Illuminate\Console\View\Components\Alert;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
@@ -18,17 +19,33 @@ class KajianController extends Controller
 {
     public function index() 
     {
-        // Data kajian aktif (tidak diarsipkan)
-        $kajians = KajianPoster::with(['masjid', 'jadwalKajians.ustadzs', 'categories'])
-            ->where('is_archive', false)
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $kajians = KajianPoster::with([
+            'masjid', 
+            'jadwalKajians' => fn($q) => $q->with('ustadzs')->orderBy('position', 'asc'),
+            'categories'
+        ])
+        ->where('is_archive', false)
+        ->where('is_draft', false) 
+        ->orderBy('created_at', 'desc')
+        ->get();
 
-        // Data kajian yang diarsipkan
-        $kajianArchive = KajianPoster::with(['masjid', 'jadwalKajians.ustadzs', 'categories'])
-            ->where('is_archive', true)
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $kajianArchive = KajianPoster::with([
+            'masjid', 
+            'jadwalKajians' => fn($q) => $q->with('ustadzs')->orderBy('position', 'asc'),
+            'categories'
+        ])
+        ->where('is_archive', true)
+        ->orderBy('created_at', 'desc')
+        ->get();
+
+        $kajianDraft = KajianPoster::with([
+            'masjid', 
+            'jadwalKajians' => fn($q) => $q->with('ustadzs')->orderBy('position', 'asc'),
+            'categories'
+        ])
+        ->where('is_draft', true)
+        ->orderBy('created_at', 'desc')
+        ->get();
 
         $masjids = Masjid::orderBy('nama')->get();
         $ustadzs = Ustadz::orderBy('nama_lengkap')->get();
@@ -37,8 +54,16 @@ class KajianController extends Controller
         $categories = Category::active()->orderBy('nama')->get();
         $categoriesOptions = $categories->map(fn($c) => ['value'=>$c->id, 'label'=>$c->nama])->toArray();
 
-        return view('dashboard.kajian', compact('kajians', 'kajianArchive', 'masjids','ustadzOptions','categoriesOptions'));
+        return view('dashboard.kajian', compact(
+            'kajians', 
+            'kajianArchive', 
+            'kajianDraft', 
+            'masjids',
+            'ustadzOptions',
+            'categoriesOptions'
+        ));
     }
+
 
     public function getAllKajianPosters()
     {
@@ -47,12 +72,14 @@ class KajianController extends Controller
                 'masjid:id,nama,alamat,maps',
                 'categories:id,nama', 
                 'jadwalKajians' => fn($q) => $q->with(['ustadzs:id,nama_lengkap'])
-                    ->select('id','kajian_id','jam_mulai','jam_selesai','tanggal','hari','status','diperuntukan', 'link')
-                    ->orderBy('tanggal', 'asc') 
+                    ->select('id','kajian_id','jam_mulai','jam_selesai','tanggal','hari','status','diperuntukan', 'link','position')
+                    ->orderBy('position', 'asc') 
             ])
             ->where('is_archive', false)
+            ->where('is_draft', false) 
             ->select('id','masjid_id','judul','jenis','poster','link','keterangan')
             ->get()
+
             ->map(function($kajian){
                 $hariTerdekat = $this->getHariTerdekat($kajian->jadwalKajians);
                 return [
@@ -83,6 +110,7 @@ class KajianController extends Controller
                         'status'=>$j->status,
                         'diperuntukan'=>$j->diperuntukan,
                         'link'=> $j->link,
+                        'position'=> $j->position,
                         'ustadz'=>$j->ustadzs->map(fn($u)=>[
                             'id'=>$u->id,
                             'nama_lengkap'=>$u->nama_lengkap
@@ -110,8 +138,11 @@ class KajianController extends Controller
             $jadwalKajian = JadwalKajian::with(['kajian:id,judul,poster','ustadzs:id,nama_lengkap'])
                 ->whereHas('kajian', function($query) {
                     $query->where('is_archive', false); 
+                    $query->where('is_draft', false); 
                 })
-                ->select('id','kajian_id','jam_mulai','jam_selesai','tanggal','hari','status','diperuntukan','link')
+                ->select('id','kajian_id','jam_mulai','jam_selesai','tanggal','hari','status','diperuntukan','link','position')
+                ->orderBy('kajian_id', 'asc')
+                ->orderBy('position', 'asc') 
                 ->get()
                 ->map(fn($j)=>[
                     'id'=>$j->id,
@@ -122,6 +153,7 @@ class KajianController extends Controller
                     'status'=>$j->status,
                     'diperuntukan'=>$j->diperuntukan,
                     'link' => $j->link,
+                    'position' => $j->position,
                     'kajian_poster'=>[
                         'id'=>$j->kajian->id ?? null,
                         'judul'=>$j->kajian->judul ?? null,
@@ -137,46 +169,110 @@ class KajianController extends Controller
     }
 
 
+    public function updateJadwalPositions(Request $request)
+    {
+        $request->validate([
+            'kajian_id' => 'required|exists:kajian_posters,id',
+            'positions' => 'required|array',
+            'positions.*.id' => 'required|exists:jadwal_kajians,id',
+            'positions.*.position' => 'required|integer|min:1'
+        ]);
+
+        try {
+            DB::transaction(function() use ($request) {
+                foreach ($request->positions as $item) {
+                    JadwalKajian::where('id', $item['id'])
+                        ->where('kajian_id', $request->kajian_id)
+                        ->update(['position' => $item['position']]);
+                }
+            });
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Urutan jadwal berhasil diperbarui'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Terjadi kesalahan saat memperbarui urutan',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 
     public function archive($id)
     {
         try {
             $kajianPoster = KajianPoster::findOrFail($id);
-            
-       
+
+            // Validasi: jika draft, tidak boleh di-archive
+            if ($kajianPoster->is_draft) {
+                return redirect()->back()->with(AlertHelper::error(
+                    'Kajian poster dalam draft tidak bisa diarsipkan',
+                    'Error'
+                ));
+            }
+
             $kajianPoster->is_archive = true;
             $saveResult = $kajianPoster->save();
-            
-            Log::info("Hasil save", [
+
+            Log::info("Hasil save archive", [
                 'save_result' => $saveResult,
                 'is_archive_after_save' => $kajianPoster->is_archive,
-                'updated_data' => $kajianPoster->fresh()->toArray() 
+                'updated_data' => $kajianPoster->fresh()->toArray()
             ]);
-            
-            
 
-            return redirect()->back()->with(AlertHelper::success('Kajian poster berhasil diarsipkan', 'Success'));
+            return redirect()->back()->with(AlertHelper::success(
+                'Kajian poster berhasil diarsipkan',
+                'Success'
+            ));
         } catch (\Exception $e) {
             Log::error("Error saat archive", [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            return redirect()->back()->with(AlertHelper::error('Terjadi kesalahan saat mengarsipkan kajian poster', 'Error'));
+            return redirect()->back()->with(AlertHelper::error(
+                'Terjadi kesalahan saat mengarsipkan kajian poster',
+                'Error'
+            ));
         }
     }
 
-    public function unarchive($id)
+    public function publish($id)
     {
         try {
             $kajianPoster = KajianPoster::findOrFail($id);
+
+            // Paksa keduanya jadi false
+            $kajianPoster->is_draft = false;
             $kajianPoster->is_archive = false;
+
             $saveResult = $kajianPoster->save();
 
-            return redirect()->back()->with(AlertHelper::success('Kajian poster berhasil dikembalikan dari arsip', 'Success'));
+            Log::info("Hasil save publish", [
+                'save_result' => $saveResult,
+                'is_draft_after_save' => $kajianPoster->is_draft,
+                'is_archive_after_save' => $kajianPoster->is_archive,
+                'updated_data' => $kajianPoster->fresh()->toArray()
+            ]);
+
+            return redirect()->back()->with(AlertHelper::success(
+                'Kajian poster berhasil dipublish',
+                'Success'
+            ));
         } catch (\Exception $e) {
-            return redirect()->back()->with(AlertHelper::error('Terjadi kesalahan saat mengembalikan kajian poster dari arsip', 'Error'));
+            Log::error("Error saat publish", [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return redirect()->back()->with(AlertHelper::error(
+                'Terjadi kesalahan saat publish kajian poster',
+                'Error'
+            ));
         }
     }
+
 
     private function getHariTerdekat($jadwalKajians)
     {
@@ -200,48 +296,68 @@ class KajianController extends Controller
     }  
 
 
-    public function store(Request $request) {
-        $request->validate([
-            'judul'=>'required|string|max:255',
-            'keterangan'=>'required|string',
-            'category_ids'=>'required|array|min:1',
-            'category_ids.*'=>'string|max:255',
-            'jenis'=>['required',Rule::in(['rutin','akbar/dauroh'])],
-            'penyelenggara'=>'required|string|max:255',
-            'masjid_id'=>'nullable|exists:masjids,id',
-            'alamat_manual'=>'nullable|string',
-            'link'=>'nullable|string|max:255',
+    public function store(Request $request)
+    {
+        $isDraft = $request->_draft == 1;
+
+        if ($isDraft) {
+            $request->validate([
+                'judul' => 'required|string|max:255',
+            ]);
+        } else {
+            $request->validate([
+                'judul' => 'required|string|max:255',
+                'keterangan' => 'required|string',
+                'category_ids' => 'required|array|min:1',
+                'category_ids.*' => 'string|max:255',
+                'jenis' => ['required', Rule::in(['rutin', 'akbar/dauroh'])],
+                'penyelenggara' => 'required|string|max:255',
+                'masjid_id' => 'nullable|exists:masjids,id',
+                'alamat_manual' => 'nullable|string',
+                'link' => 'nullable|string|max:255',
+            ]);
+
+            if (empty($request->masjid_id) && empty($request->alamat_manual)) {
+                return back()->withErrors(['lokasi' => 'Pilih salah satu lokasi: Masjid atau Alamat Manual']);
+            }
+
+            if (!empty($request->masjid_id) && !empty($request->alamat_manual)) {
+                return back()->withErrors(['lokasi' => 'Pilih hanya salah satu lokasi']);
+            }
+        }
+
+        // Upload poster (opsional di draft)
+        $posterFileName = null;
+        if ($request->hasFile('poster')) {
+            $file = $request->file('poster');
+            $posterFileName = uniqid('poster_') . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('uploads/kajian-poster'), $posterFileName);
+        }
+
+        $kajian = KajianPoster::create([
+            'masjid_id' => $request->masjid_id,
+            'judul' => $request->judul,
+            'keterangan' => $request->keterangan,
+            'jenis' => $request->jenis,
+            'poster' => $posterFileName,
+            'penyelenggara' => $request->penyelenggara,
+            'alamat_manual' => $request->alamat_manual,
+            'link' => $request->link,
+            'is_draft' => $isDraft, 
         ]);
 
-        if (empty($request->masjid_id) && empty($request->alamat_manual)) {
-            return back()->withErrors(['lokasi'=>'Pilih salah satu lokasi: Masjid atau Alamat Manual']);
-        }
-        if (!empty($request->masjid_id) && !empty($request->alamat_manual)) {
-            return back()->withErrors(['lokasi'=>'Pilih hanya salah satu lokasi']);
+        if (!$isDraft) {
+            $this->syncCategories($kajian, $request->category_ids);
         }
 
-        $posterFileName=null;
-        if($request->hasFile('poster')){
-            $file=$request->file('poster');
-            $posterFileName=uniqid('poster_').'.'.$file->getClientOriginalExtension();
-            $file->move(public_path('uploads/kajian-poster'),$posterFileName);
-        }
-
-        $kajian=KajianPoster::create([
-            'masjid_id'=>$request->masjid_id,
-            'judul'=>$request->judul,
-            'keterangan'=>$request->keterangan,
-            'jenis'=>$request->jenis,
-            'poster'=>$posterFileName,
-            'penyelenggara'=>$request->penyelenggara,
-            'alamat_manual'=>$request->alamat_manual,
-            'link'=> $request->link,
-        ]);
-
-        $this->syncCategories($kajian,$request->category_ids);
-
-        return redirect()->route('kajian.index')->with(AlertHelper::success('Kajian berhasil ditambahkan','Success'));
+        return redirect()->route('kajian.index')->with(
+            AlertHelper::success(
+                $isDraft ? 'Kajian berhasil disimpan sebagai draft' : 'Kajian berhasil ditambahkan',
+                'Success'
+            )
+        );
     }
+
 
     public function update(Request $request,$id){
         $kajian=KajianPoster::findOrFail($id);
@@ -334,41 +450,51 @@ class KajianController extends Controller
             'ustadz_ids.*'=>'nullable|string',
             'link'=> 'nullable|url'
         ]);
+        
+        try {
+            DB::transaction(function() use ($request) {
+                $nextPosition = JadwalKajian::where('kajian_id', $request->kajian_id)
+                    ->max('position') + 1;
+                $dayMap=['Monday'=>'Senin','Tuesday'=>'Selasa','Wednesday'=>'Rabu','Thursday'=>'Kamis','Friday'=>'Jumat','Saturday'=>'Sabtu','Sunday'=>'Ahad'];
+                $hari=$dayMap[Carbon::parse($request->tanggal)->format('l')];
+                    
+                    $jadwal = JadwalKajian::create([
+                    'kajian_id'=>$request->kajian_id,
+                    'jam_mulai'=>$request->jam_mulai,
+                    'jam_selesai'=>$request->jam_selesai,
+                    'tanggal'=>$request->tanggal,
+                    'hari'=>$hari,
+                    'status'=>$request->status,
+                    'diperuntukan'=>$request->diperuntukan,
+                    'link'=>$request->link,
+                    'position' => $nextPosition
+                ]);
 
-        $dayMap=['Monday'=>'Senin','Tuesday'=>'Selasa','Wednesday'=>'Rabu','Thursday'=>'Kamis','Friday'=>'Jumat','Saturday'=>'Sabtu','Sunday'=>'Ahad'];
-        $hari=$dayMap[Carbon::parse($request->tanggal)->format('l')];
-
-        $jadwal=JadwalKajian::create([
-            'kajian_id'=>$request->kajian_id,
-            'jam_mulai'=>$request->jam_mulai,
-            'jam_selesai'=>$request->jam_selesai,
-            'tanggal'=>$request->tanggal,
-            'hari'=>$hari,
-            'status'=>$request->status,
-            'diperuntukan'=>$request->diperuntukan,
-            'link'=>$request->link,
-        ]);
-
-        if($request->ustadz_ids){
-            $ustadzIds=[];
-            foreach($request->ustadz_ids as $u){
-                $u=trim($u);
-                if(is_numeric($u) && Ustadz::find($u)){
-                    $ustadzIds[]=$u;
-                } else {
-                    $existing=Ustadz::where('nama_lengkap',$u)->first();
-                    if($existing){
-                        $ustadzIds[]=$existing->id;
-                    } else {
-                        $new=Ustadz::create(['nama_lengkap'=>$u]);
-                        $ustadzIds[]=$new->id;
+                if($request->ustadz_ids){
+                    $ustadzIds=[];
+                    foreach($request->ustadz_ids as $u){
+                        $u=trim($u);
+                        if(is_numeric($u) && Ustadz::find($u)){
+                            $ustadzIds[]=$u;
+                        } else {
+                            $existing=Ustadz::where('nama_lengkap',$u)->first();
+                            if($existing){
+                                $ustadzIds[]=$existing->id;
+                            } else {
+                                $new=Ustadz::create(['nama_lengkap'=>$u]);
+                                $ustadzIds[]=$new->id;
+                            }
+                        }
                     }
+                    $jadwal->ustadzs()->attach($ustadzIds);
                 }
-            }
-            $jadwal->ustadzs()->attach($ustadzIds);
+            });
+            return back()->with(AlertHelper::success('Berhasil menambahkan jadwal kajian','Success'));
+        
+        } catch (\Throwable $th) {
+            return back()->with(AlertHelper::success('terjadi kesalahan'. $th->getMessage(),'Error'));
         }
-
-        return back()->with(AlertHelper::success('Berhasil menambahkan jadwal kajian','Success'));
+       
     }
 
     public function updateJadwal(Request $request,$id){
@@ -416,11 +542,26 @@ class KajianController extends Controller
         return back()->with(AlertHelper::success('Berhasil memperbarui jadwal kajian','Success'));
     }
 
-    public function destroyJadwal($id){
-        $jadwal=JadwalKajian::findOrFail($id);
-        $jadwal->ustadzs()->detach();
-        $jadwal->delete();
-        return redirect()->route('kajian.index')->with(AlertHelper::success('Berhasil menghapus data jadwal','Success'));
+ public function destroyJadwal($id)
+    {
+        try {
+            $jadwal = JadwalKajian::findOrFail($id);
+            $kajianId = $jadwal->kajian_id;
+            $deletedPosition = $jadwal->position;
+
+            DB::transaction(function() use ($jadwal, $kajianId, $deletedPosition) {
+                $jadwal->delete();
+                JadwalKajian::where('kajian_id', $kajianId)
+                    ->where('position', '>', $deletedPosition)
+                    ->decrement('position');
+            });
+
+            return back()->with(AlertHelper::success('Berhasil menghapus data jadwal','Success'));
+
+        } catch (\Exception $e) {
+            return back()->with(AlertHelper::error('Terjadi Kesalahan' . $e->getMessage(),'Error'));
+
+        }
     }
 
     public function searchUstadz(Request $request){

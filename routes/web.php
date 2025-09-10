@@ -100,6 +100,7 @@ Route::middleware(['auth', 'deny.roles:jamaah'])->group(function () {
         Route::post('/', 'store')->name('store');
         Route::put('/{id}', 'update')->name('update');
         Route::delete('/{id}', 'destroy')->name('destroy');
+        Route::post('/{id}/jadwal/position', 'updateJadwalPositions')->name('updateJadwalPositions');
 
         Route::post('/jadwal', 'storeJadwal')->name('store-jadwal');
         Route::put('/jadwal/{id}', 'updateJadwal')->name('update-jadwal');
@@ -107,7 +108,7 @@ Route::middleware(['auth', 'deny.roles:jamaah'])->group(function () {
         Route::get('/search-ustadz', 'searchUstadz')->name('search-ustadz');
         
         Route::put('/archive-kajian/{id}', 'archive')->name('archive');
-        Route::post('/kajian-poster/{id}/unarchive',  'unarchive')->name('unarchive');
+        Route::post('/kajian-poster/{id}/unarchive',  'publish')->name('publish');
 
     });
 
