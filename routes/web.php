@@ -101,6 +101,7 @@ Route::middleware(['auth', 'deny.roles:jamaah'])->group(function () {
         Route::put('/{id}', 'update')->name('update');
         Route::delete('/{id}', 'destroy')->name('destroy');
         Route::post('/{id}/jadwal/position', 'updateJadwalPositions')->name('updateJadwalPositions');
+        Route::post('/positions', 'updateKajianPositions')->name('updateKajianPositions');
 
         Route::post('/jadwal', 'storeJadwal')->name('store-jadwal');
         Route::put('/jadwal/{id}', 'updateJadwal')->name('update-jadwal');

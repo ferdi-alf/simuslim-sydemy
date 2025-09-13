@@ -26,6 +26,7 @@ class KajianController extends Controller
         ])
         ->where('is_archive', false)
         ->where('is_draft', false) 
+        ->orderBy('position', 'asc') 
         ->orderBy('created_at', 'desc')
         ->get();
 
@@ -77,6 +78,8 @@ class KajianController extends Controller
             ])
             ->where('is_archive', false)
             ->where('is_draft', false) 
+            ->orderBy('position', 'asc') 
+            ->orderBy('created_at', 'desc')
             ->select('id','masjid_id','judul','jenis','poster','link','keterangan')
             ->get()
 
@@ -168,6 +171,21 @@ class KajianController extends Controller
         }
     }
 
+
+    public function updateKajianPositions(Request $request)
+    {
+        try {
+            $kajianIds = $request->kajian_ids;
+            
+            foreach ($kajianIds as $index => $kajianId) {
+                KajianPoster::where('id', $kajianId)->update(['position' => $index + 1]);
+            }
+            
+            return response()->json(['success' => true, 'message' => 'Posisi berhasil diupdate']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
 
     public function updateJadwalPositions(Request $request)
     {

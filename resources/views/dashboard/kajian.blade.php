@@ -26,6 +26,15 @@
         .jadwal-row.sortable-chosen {
             background-color: #f0f9ff !important;
         }
+
+        .kajian-row.sortable-chosen {
+            background-color: #f0f9ff !important;
+        }
+
+        .drag-handle-kajian:hover {
+            color: #4f46e5;
+            transform: scale(1.1);
+        }
     </style>
     <x-fragments.form-modal id="add-kajian-modal" :isDraft="true" title="Tambah Kajian" action="{{ route('kajian.store') }}">
         <div class="grid grid-cols-2 gap-2 overflow-auto h-96">
@@ -472,308 +481,329 @@
             {{-- ini table utama kajian --}}
             <div id="kajian" class="space-y-2">
                 @if ($kajians->count() > 0)
-                    @foreach ($kajians as $kajian)
-                        <div class="border border-gray-200 rounded-lg bg-white/25 backdrop-blur-2xl shadow-sm kajian-item"
-                            data-jadwals='@json(
-                                $kajian->jadwalKajians->map(fn($jadwal) => [
-                                        'hari' => $jadwal->hari,
-                                        'status' => $jadwal->status,
-                                    ]))' x-data="{ isOpen: false }">
-                            <div class="overflow-x-auto">
-                                <table class="w-full table-auto">
-                                    <thead class="bg-gray-50/40">
-                                        <tr>
-                                            <th class="px-4 py-3"></th>
-                                            <th
-                                                class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Poster</th>
-                                            <th
-                                                class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Judul</th>
-                                            <th
-                                                class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Kategori</th>
-                                            <th
-                                                class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Jenis</th>
-                                            <th
-                                                class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Penyelenggara</th>
-                                            <th
-                                                class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Lokasi</th>
-                                            <th
-                                                class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Jadwal</th>
-                                            <th
-                                                class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Aksi</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr class="hover:bg-gray-50 transition-colors cursor-pointer">
-                                            <td class="px-4 py-3 whitespace-nowrap">
-                                                <div
-                                                    class="rounded-full w-7 h-7 transition-all flex text-center hover:bg-gray-300/45 justify-center items-center">
-                                                    <svg @click="isOpen = !isOpen"
-                                                        class="w-5 h-5 text-gray-400 transition-transform cursor-pointer"
-                                                        :class="{ 'rotate-180': isOpen }" fill="none"
-                                                        stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                                    </svg>
-                                                </div>
-                                            </td>
-                                            <td class="px-4 py-3 whitespace-nowrap">
-                                                <div class="flex items-center">
-                                                    <div class="relative group">
-                                                        @if ($kajian->poster)
-                                                            <img src="{{ asset('uploads/kajian-poster/' . $kajian->poster) }}"
-                                                                class="w-16 h-16 rounded-lg object-cover cursor-pointer transition-all duration-300 group-hover:ring-2 group-hover:ring-indigo-500"
-                                                                alt="{{ $kajian->judul }}"
-                                                                data-modal-target="poster-modal-{{ $kajian->id }}"
-                                                                data-modal-toggle="poster-modal-{{ $kajian->id }}">
-                                                        @else
-                                                            <span> - </span>
-                                                        @endif
+                    <div class="sortable-kajian space-y-4">
+                        @foreach ($kajians as $kajian)
+                            <div class="border border-gray-200 rounded-lg bg-white/25 backdrop-blur-2xl shadow-sm kajian-item kajian-row"
+                                data-kajian-id="{{ $kajian->id }}" data-position="{{ $kajian->position }}"
+                                data-jadwals='@json(
+                                    $kajian->jadwalKajians->map(fn($jadwal) => [
+                                            'hari' => $jadwal->hari,
+                                            'status' => $jadwal->status,
+                                        ]))' x-data="{ isOpen: false }">
+                                <div class="overflow-x-auto">
+                                    <table class="w-full table-auto">
+                                        <thead class="bg-gray-50/40">
+                                            <tr>
+                                                <th class="px-4 py-3 text-center">
+                                                </th>
+                                                <th
+                                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Poster</th>
+                                                <th
+                                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Judul</th>
+                                                <th
+                                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Hari Terdekat</th>
+                                                <th
+                                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Kategori</th>
+                                                <th
+                                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Jenis</th>
+                                                <th
+                                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Penyelenggara</th>
+                                                <th
+                                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Lokasi</th>
+                                                <th
+                                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Jadwal</th>
+                                                <th
+                                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr class="hover:bg-gray-50 transition-colors cursor-pointer">
+                                                <td class="px-4 py-3 whitespace-nowrap flex items-center space-x-3">
+                                                    <div
+                                                        class="drag-handle-kajian cursor-move hover:text-indigo-600 transition-colors">
+                                                        <i class="fa-solid fa-grip-vertical text-gray-400"></i>
+                                                    </div>
+                                                    <div
+                                                        class="rounded-full w-7 h-7 transition-all flex text-center hover:bg-gray-300/45 justify-center items-center">
+                                                        <svg @click="isOpen = !isOpen"
+                                                            class="w-5 h-5 text-gray-400 transition-transform cursor-pointer"
+                                                            :class="{ 'rotate-180': isOpen }" fill="none"
+                                                            stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                                        </svg>
+                                                    </div>
+                                                </td>
+                                                <td class="px-4 py-3 whitespace-nowrap">
+                                                    <div class="flex items-center">
+                                                        <div class="relative group">
+                                                            @if ($kajian->poster)
+                                                                <img src="{{ asset('uploads/kajian-poster/' . $kajian->poster) }}"
+                                                                    class="w-16 h-16 rounded-lg object-cover cursor-pointer transition-all duration-300 group-hover:ring-2 group-hover:ring-indigo-500"
+                                                                    alt="{{ $kajian->judul }}"
+                                                                    data-modal-target="poster-modal-{{ $kajian->id }}"
+                                                                    data-modal-toggle="poster-modal-{{ $kajian->id }}">
+                                                            @else
+                                                                <span> - </span>
+                                                            @endif
 
-                                                        <div
-                                                            class="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full 
+                                                            <div
+                                                                class="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full 
                                                         opacity-0 group-hover:opacity-100 transition-opacity duration-300 
                                                         bg-gray-900 text-white text-xs rounded py-1 px-2 whitespace-nowrap z-10">
-                                                            Klik untuk melihat poster
-                                                            <div
-                                                                class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-full 
+                                                                Klik untuk melihat poster
+                                                                <div
+                                                                    class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-full 
                                                             border-4 border-transparent border-b-gray-900">
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            </td>
-                                            <td class="px-4 py-3">
-                                                <div>
-                                                    <span class="text-sm font-medium text-gray-900">
-                                                        {{ \Illuminate\Support\Str::limit($kajian->judul, 20) }}
-                                                    </span>
-                                                </div>
-                                            </td>
-
-                                            <td class="px-4 py-3 whitespace-nowrap">
-                                                @if ($kajian->categories->count() > 0)
-                                                    <div class="grid gap-2 col-span-2">
-                                                        @foreach ($kajian->categories as $category)
-                                                            <span
-                                                                class="inline-block bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">
-                                                                {{ $category->nama }}
-                                                            </span>
-                                                        @endforeach
+                                                </td>
+                                                <td class="px-4 py-3">
+                                                    <div>
+                                                        <span class="text-sm font-medium text-gray-900">
+                                                            {{ \Illuminate\Support\Str::limit($kajian->judul, 20) }}
+                                                        </span>
                                                     </div>
-                                                @else
-                                                    <span class="text-gray-400 italic text-sm">Belum ada
-                                                        Kategori</span>
-                                                @endif
-                                            </td>
-                                            <td class="px-4 py-3 whitespace-nowrap">
-                                                <span
-                                                    class="inline-flex px-2 py-1 text-xs font-semibold rounded-full 
-                                        {{ $kajian->jenis === 'rutin' ? 'bg-green-100 text-green-800' : 'bg-purple-100 text-purple-800' }}">
-                                                    {{ ucfirst($kajian->jenis) }}
-                                                </span>
-                                            </td>
-                                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
-                                                {{ $kajian->penyelenggara }}
-                                            </td>
-                                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
-                                                {{ $kajian->lokasi }}
-                                            </td>
-                                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                                                <div class="flex items-center space-x-2">
-                                                    <span
-                                                        class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                                        {{ $kajian->jadwalKajians->count() }} Jadwal
+                                                </td>
+                                                <td class="px-4 py-3">
+                                                    {{ $kajian->hari_terdekat }}
+                                                    <span class="text-xs text-gray-500">
+                                                        {{ $kajian->tanggal_terdekat }}
                                                     </span>
-                                                </div>
-                                            </td>
-                                            <td class="px-4 py-3 whitespace-nowrap">
-                                                <x-action-buttons modalId="modal-edit-kajian-{{ $kajian->id }}"
-                                                    deleteRoute="{{ route('kajian.destroy', $kajian->id) }}"
-                                                    archiveRoute="{{ route('kajian.archive', $kajian->id) }}" />
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
+                                                </td>
 
-                            <div x-show="isOpen" x-transition:enter="transition ease-out duration-200"
-                                x-transition:enter-start="opacity-0 transform scale-95"
-                                x-transition:enter-end="opacity-100 transform scale-100"
-                                x-transition:leave="transition ease-in duration-150"
-                                x-transition:leave-start="opacity-100 transform scale-100"
-                                x-transition:leave-end="opacity-0 transform scale-95">
-                                <div class="border-t border-gray-200 p-4 bg-gray-50/30">
-                                    <div class="bg-gray-300/30 rounded-lg mx-10 my-2 p-3 border-l border-blue-500">
-                                        <p>{{ $kajian->keterangan }}</p>
-                                    </div>
-                                    <div class="flex justify-between items-center mb-4">
-                                        <h4 class="font-medium text-gray-900 flex items-center">
-                                            <i class="fa-solid fa-calendar-days mr-2 text-indigo-600"></i>
-                                            Jadwal Kajian
-                                            <span class="ml-2 text-xs text-gray-500">(Drag untuk mengurutkan)</span>
-                                        </h4>
-                                        <x-fragments.modal-button target="add-jadwal-modal-{{ $kajian->id }}"
-                                            variant="indigo">
-                                            <i class="fa-solid fa-plus mr-2"></i>
-                                            Tambah Jadwal
-                                        </x-fragments.modal-button>
-                                    </div>
+                                                <td class="px-4 py-3 whitespace-nowrap">
+                                                    @if ($kajian->categories->count() > 0)
+                                                        <div class="grid gap-2 col-span-2">
+                                                            @foreach ($kajian->categories as $category)
+                                                                <span
+                                                                    class="inline-block bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">
+                                                                    {{ $category->nama }}
+                                                                </span>
+                                                            @endforeach
+                                                        </div>
+                                                    @else
+                                                        <span class="text-gray-400 italic text-sm">Belum ada
+                                                            Kategori</span>
+                                                    @endif
+                                                </td>
+                                                <td class="px-4 py-3 whitespace-nowrap">
+                                                    <span
+                                                        class="inline-flex px-2 py-1 text-xs font-semibold rounded-full 
+                                        {{ $kajian->jenis === 'rutin' ? 'bg-green-100 text-green-800' : 'bg-purple-100 text-purple-800' }}">
+                                                        {{ ucfirst($kajian->jenis) }}
+                                                    </span>
+                                                </td>
+                                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                                                    {{ $kajian->penyelenggara }}
+                                                </td>
+                                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                                                    {{ $kajian->lokasi }}
+                                                </td>
+                                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                                    <div class="flex items-center space-x-2">
+                                                        <span
+                                                            class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                            {{ $kajian->jadwalKajians->count() }} Jadwal
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td class="px-4 py-3 whitespace-nowrap">
+                                                    <x-action-buttons modalId="modal-edit-kajian-{{ $kajian->id }}"
+                                                        deleteRoute="{{ route('kajian.destroy', $kajian->id) }}"
+                                                        archiveRoute="{{ route('kajian.archive', $kajian->id) }}" />
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
 
-                                    @if ($kajian->jadwalKajians->count() > 0)
-                                        <div class="overflow-x-auto">
-                                            <!-- Sortable Table for Drag & Drop -->
-                                            <div class="sortable-jadwal" data-kajian-id="{{ $kajian->id }}">
-                                                <table
-                                                    class="min-w-full bg-white/20 backdrop-blur-3xl border border-gray-200 rounded-lg">
-                                                    <thead class="bg-gray-50/50">
-                                                        <tr>
-                                                            <th class="px-2 py-3 text-center">
-                                                                <i
-                                                                    class="fa-solid fa-grip-vertical text-gray-400 text-sm"></i>
-                                                            </th>
-                                                            <th
-                                                                class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                                <i class="fa-solid fa-calendar mr-1 text-indigo-500"></i>
-                                                                Hari & Tanggal
-                                                            </th>
-                                                            <th
-                                                                class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                                <i class="fa-solid fa-clock mr-1 text-indigo-500"></i>
-                                                                Waktu
-                                                            </th>
-                                                            <th
-                                                                class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                                <i class="fa-solid fa-users mr-1 text-green-500"></i>
-                                                                Target
-                                                            </th>
-                                                            <th
-                                                                class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                                <i class="fa-solid fa-user-tie mr-1 text-purple-500"></i>
-                                                                Ustadz
-                                                            </th>
-                                                            <th
-                                                                class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                                <i class="fa-solid fa-info-circle mr-1 text-blue-500"></i>
-                                                                Status
-                                                            </th>
-                                                            <th
-                                                                class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                                <i class="fa-solid fa-cog mr-1"></i>
-                                                                Action
-                                                            </th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody class="divide-y divide-gray-200">
-                                                        @foreach ($kajian->jadwalKajians as $jadwal)
-                                                            <tr class="jadwal-row hover:bg-gray-50/30 transition-colors cursor-move"
-                                                                data-jadwal-id="{{ $jadwal->id }}"
-                                                                data-position="{{ $jadwal->position }}">
-                                                                <!-- Drag Handle -->
-                                                                <td class="px-2 py-4 text-center">
-                                                                    <div
-                                                                        class="drag-handle cursor-move hover:text-indigo-600 transition-colors">
-                                                                        <i
-                                                                            class="fa-solid fa-grip-vertical text-gray-400"></i>
-                                                                    </div>
-                                                                </td>
+                                <div x-show="isOpen" x-transition:enter="transition ease-out duration-200"
+                                    x-transition:enter-start="opacity-0 transform scale-95"
+                                    x-transition:enter-end="opacity-100 transform scale-100"
+                                    x-transition:leave="transition ease-in duration-150"
+                                    x-transition:leave-start="opacity-100 transform scale-100"
+                                    x-transition:leave-end="opacity-0 transform scale-95">
+                                    <div class="border-t border-gray-200 p-4 bg-gray-50/30">
+                                        <div class="bg-gray-300/30 rounded-lg mx-10 my-2 p-3 border-l border-blue-500">
+                                            <p>{{ $kajian->keterangan }}</p>
+                                        </div>
+                                        <div class="flex justify-between items-center mb-4">
+                                            <h4 class="font-medium text-gray-900 flex items-center">
+                                                <i class="fa-solid fa-calendar-days mr-2 text-indigo-600"></i>
+                                                Jadwal Kajian
+                                                <span class="ml-2 text-xs text-gray-500">(Drag untuk mengurutkan)</span>
+                                            </h4>
+                                            <x-fragments.modal-button target="add-jadwal-modal-{{ $kajian->id }}"
+                                                variant="indigo">
+                                                <i class="fa-solid fa-plus mr-2"></i>
+                                                Tambah Jadwal
+                                            </x-fragments.modal-button>
+                                        </div>
 
-                                                                <!-- Hari & Tanggal -->
-                                                                <td class="px-4 py-4 whitespace-nowrap">
-                                                                    <div>
-                                                                        <div
-                                                                            class="text-sm font-semibold text-gray-900 flex items-center">
-
-                                                                            {{ $jadwal->hari }}
-                                                                        </div>
-                                                                        <div class="text-sm text-gray-500">
-                                                                            {{ \Carbon\Carbon::parse($jadwal->tanggal)->format('d M Y') }}
-                                                                        </div>
-                                                                    </div>
-                                                                </td>
-
-                                                                <!-- ... rest of the table cells remain the same ... -->
-                                                                <td class="px-4 py-4 whitespace-nowrap">
-                                                                    <div class="text-sm text-gray-900 font-mono">
-                                                                        {{ \Carbon\Carbon::parse($jadwal->jam_mulai)->format('H:i') }}
-                                                                        -
-                                                                        {{ \Carbon\Carbon::parse($jadwal->jam_selesai)->format('H:i') }}
-                                                                    </div>
-                                                                </td>
-
-                                                                <td class="px-4 py-4 whitespace-nowrap">
-                                                                    <div class="text-sm text-gray-900">
-                                                                        {{ ucfirst($jadwal->diperuntukan) }}
-                                                                    </div>
-                                                                </td>
-
-                                                                <td class="px-4 py-4">
-                                                                    @if ($jadwal->ustadzs->count() > 0)
-                                                                        <div class="flex flex-wrap gap-1">
-                                                                            @foreach ($jadwal->ustadzs as $ustadz)
-                                                                                <span
-                                                                                    class="inline-block bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">
-                                                                                    {{ $ustadz->nama_lengkap }}
-                                                                                </span>
-                                                                            @endforeach
-                                                                        </div>
-                                                                    @else
-                                                                        <span class="text-gray-400 italic text-sm">Belum
-                                                                            ada ustadz</span>
-                                                                    @endif
-                                                                </td>
-
-                                                                <td class="px-4 py-4 whitespace-nowrap">
-                                                                    @php
-                                                                        $statusClass =
-                                                                            [
-                                                                                'belum dimulai' =>
-                                                                                    'bg-gray-100 text-gray-800',
-                                                                                'berjalan' =>
-                                                                                    'bg-blue-100 text-blue-800',
-                                                                                'selesai' =>
-                                                                                    'bg-green-100 text-green-800',
-                                                                                'dibatalkan' =>
-                                                                                    'bg-red-100 text-red-800',
-                                                                            ][$jadwal->status] ??
-                                                                            'bg-gray-100 text-gray-800';
-                                                                    @endphp
-                                                                    <span
-                                                                        class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $statusClass }}">
-                                                                        {{ ucfirst($jadwal->status) }}
-                                                                    </span>
-                                                                </td>
-
-                                                                <td class="px-4 py-4 whitespace-nowrap text-center">
-                                                                    <x-action-buttons
-                                                                        modalId="modal-edit-jadwal-{{ $jadwal->id }}"
-                                                                        deleteRoute="{{ route('kajian.destroy-jadwal', $jadwal->id) }}" />
-                                                                </td>
+                                        @if ($kajian->jadwalKajians->count() > 0)
+                                            <div class="overflow-x-auto">
+                                                <!-- Sortable Table for Drag & Drop -->
+                                                <div class="sortable-jadwal" data-kajian-id="{{ $kajian->id }}">
+                                                    <table
+                                                        class="min-w-full bg-white/20 backdrop-blur-3xl border border-gray-200 rounded-lg">
+                                                        <thead class="bg-gray-50/50">
+                                                            <tr>
+                                                                <th class="px-2 py-3 text-center">
+                                                                    <i
+                                                                        class="fa-solid fa-grip-vertical text-gray-400 text-sm"></i>
+                                                                </th>
+                                                                <th
+                                                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                                    <i
+                                                                        class="fa-solid fa-calendar mr-1 text-indigo-500"></i>
+                                                                    Hari & Tanggal
+                                                                </th>
+                                                                <th
+                                                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                                    <i class="fa-solid fa-clock mr-1 text-indigo-500"></i>
+                                                                    Waktu
+                                                                </th>
+                                                                <th
+                                                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                                    <i class="fa-solid fa-users mr-1 text-green-500"></i>
+                                                                    Target
+                                                                </th>
+                                                                <th
+                                                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                                    <i
+                                                                        class="fa-solid fa-user-tie mr-1 text-purple-500"></i>
+                                                                    Ustadz
+                                                                </th>
+                                                                <th
+                                                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                                    <i
+                                                                        class="fa-solid fa-info-circle mr-1 text-blue-500"></i>
+                                                                    Status
+                                                                </th>
+                                                                <th
+                                                                    class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                                    <i class="fa-solid fa-cog mr-1"></i>
+                                                                    Action
+                                                                </th>
                                                             </tr>
-                                                        @endforeach
-                                                    </tbody>
-                                                </table>
+                                                        </thead>
+                                                        <tbody class="divide-y divide-gray-200">
+                                                            @foreach ($kajian->jadwalKajians as $jadwal)
+                                                                <tr class="jadwal-row hover:bg-gray-50/30 transition-colors cursor-move"
+                                                                    data-jadwal-id="{{ $jadwal->id }}"
+                                                                    data-position="{{ $jadwal->position }}">
+                                                                    <!-- Drag Handle -->
+                                                                    <td class="px-2 py-4 text-center">
+                                                                        <div
+                                                                            class="drag-handle cursor-move hover:text-indigo-600 transition-colors">
+                                                                            <i
+                                                                                class="fa-solid fa-grip-vertical text-gray-400"></i>
+                                                                        </div>
+                                                                    </td>
+
+                                                                    <!-- Hari & Tanggal -->
+                                                                    <td class="px-4 py-4 whitespace-nowrap">
+                                                                        <div>
+                                                                            <div
+                                                                                class="text-sm font-semibold text-gray-900 flex items-center">
+
+                                                                                {{ $jadwal->hari }}
+                                                                            </div>
+                                                                            <div class="text-sm text-gray-500">
+                                                                                {{ \Carbon\Carbon::parse($jadwal->tanggal)->format('d M Y') }}
+                                                                            </div>
+                                                                        </div>
+                                                                    </td>
+
+                                                                    <!-- ... rest of the table cells remain the same ... -->
+                                                                    <td class="px-4 py-4 whitespace-nowrap">
+                                                                        <div class="text-sm text-gray-900 font-mono">
+                                                                            {{ \Carbon\Carbon::parse($jadwal->jam_mulai)->format('H:i') }}
+                                                                            -
+                                                                            {{ \Carbon\Carbon::parse($jadwal->jam_selesai)->format('H:i') }}
+                                                                        </div>
+                                                                    </td>
+
+                                                                    <td class="px-4 py-4 whitespace-nowrap">
+                                                                        <div class="text-sm text-gray-900">
+                                                                            {{ ucfirst($jadwal->diperuntukan) }}
+                                                                        </div>
+                                                                    </td>
+
+                                                                    <td class="px-4 py-4">
+                                                                        @if ($jadwal->ustadzs->count() > 0)
+                                                                            <div class="flex flex-wrap gap-1">
+                                                                                @foreach ($jadwal->ustadzs as $ustadz)
+                                                                                    <span
+                                                                                        class="inline-block bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">
+                                                                                        {{ $ustadz->nama_lengkap }}
+                                                                                    </span>
+                                                                                @endforeach
+                                                                            </div>
+                                                                        @else
+                                                                            <span
+                                                                                class="text-gray-400 italic text-sm">Belum
+                                                                                ada ustadz</span>
+                                                                        @endif
+                                                                    </td>
+
+                                                                    <td class="px-4 py-4 whitespace-nowrap">
+                                                                        @php
+                                                                            $statusClass =
+                                                                                [
+                                                                                    'belum dimulai' =>
+                                                                                        'bg-gray-100 text-gray-800',
+                                                                                    'Sedang berjalan' =>
+                                                                                        'bg-blue-100 text-blue-800',
+                                                                                    'selesai' =>
+                                                                                        'bg-green-100 text-green-800',
+                                                                                    'Diliburkan' =>
+                                                                                        'bg-red-100 text-red-800',
+                                                                                ][$jadwal->status] ??
+                                                                                'bg-gray-100 text-gray-800';
+                                                                        @endphp
+                                                                        <span
+                                                                            class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $statusClass }}">
+                                                                            {{ ucfirst($jadwal->status) }}
+                                                                        </span>
+                                                                    </td>
+
+                                                                    <td class="px-4 py-4 whitespace-nowrap text-center">
+                                                                        <x-action-buttons
+                                                                            modalId="modal-edit-jadwal-{{ $jadwal->id }}"
+                                                                            deleteRoute="{{ route('kajian.destroy-jadwal', $jadwal->id) }}" />
+                                                                    </td>
+                                                                </tr>
+                                                            @endforeach
+                                                        </tbody>
+                                                    </table>
+                                                </div>
                                             </div>
-                                        </div>
-                                    @else
-                                        <div class="text-center py-8 text-gray-500">
-                                            <i class="fa-solid fa-calendar-xmark text-3xl mb-3 text-gray-300"></i>
-                                            <p class="text-base font-medium">Belum ada jadwal</p>
-                                            <p class="text-sm text-gray-400">Mulai dengan menambahkan jadwal baru untuk
-                                                kajian ini</p>
-                                        </div>
-                                    @endif
+                                        @else
+                                            <div class="text-center py-8 text-gray-500">
+                                                <i class="fa-solid fa-calendar-xmark text-3xl mb-3 text-gray-300"></i>
+                                                <p class="text-base font-medium">Belum ada jadwal</p>
+                                                <p class="text-sm text-gray-400">Mulai dengan menambahkan jadwal baru untuk
+                                                    kajian ini</p>
+                                            </div>
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    @endforeach
+                        @endforeach
+                    </div>
                 @else
                     <div class="text-center py-12 text-gray-500">
                         <i class="fa-solid fa-mosque text-5xl mb-4 text-gray-300"></i>
@@ -1488,7 +1518,6 @@
                     const statusValue = this.filterStatus;
                     let visibleCount = 0;
 
-                    // Update URL dengan parameter filter
                     const urlParams = new URLSearchParams();
                     if (hariValue) urlParams.set('hari', hariValue);
                     if (statusValue) urlParams.set('status', statusValue);
@@ -1496,26 +1525,22 @@
                         .toString() : '');
                     window.history.replaceState({}, '', newUrl);
 
-                    // Iterasi melalui semua kajian
                     document.querySelectorAll('.kajian-item').forEach(item => {
                         const jadwals = JSON.parse(item.getAttribute('data-jadwals'));
                         let shouldShow = true;
 
-                        // Filter berdasarkan hari
                         if (hariValue && hariValue !== '') {
                             const hasHariMatch = jadwals.some(jadwal => jadwal.hari
                                 .toLowerCase() === hariValue.toLowerCase());
                             if (!hasHariMatch) shouldShow = false;
                         }
 
-                        // Filter berdasarkan status
                         if (statusValue && statusValue !== '') {
                             const hasStatusMatch = jadwals.some(jadwal => jadwal.status
                                 .toLowerCase() === statusValue.toLowerCase());
                             if (!hasStatusMatch) shouldShow = false;
                         }
 
-                        // Tampilkan atau sembunyikan berdasarkan hasil filter
                         if (shouldShow) {
                             item.style.display = 'block';
                             visibleCount++;
@@ -1524,7 +1549,6 @@
                         }
                     });
 
-                    // Tampilkan pesan jika tidak ada hasil
                     const noResultsElement = document.getElementById('no-results');
                     if (noResultsElement) {
                         noResultsElement.style.display = visibleCount === 0 ? 'block' : 'none';
@@ -1535,38 +1559,69 @@
                     this.filterHari = '';
                     this.filterStatus = '';
 
-                    // Reset URL
                     window.history.replaceState({}, '', window.location.pathname);
-
-                    // Tampilkan semua kajian
                     document.querySelectorAll('.kajian-item').forEach(item => {
                         item.style.display = 'block';
                     });
-
-                    // Sembunyikan pesan no results
                     const noResultsElement = document.getElementById('no-results');
                     if (noResultsElement) {
                         noResultsElement.style.display = 'none';
                     }
                 }
             }));
+        });
+        document.querySelectorAll('.sortable-jadwal').forEach(function(el) {
+            const kajianId = el.dataset.kajianId;
 
-            document.querySelectorAll('.sortable-jadwal').forEach(function(el) {
-                const kajianId = el.dataset.kajianId;
+            new Sortable(el.querySelector('tbody'), {
+                animation: 150,
+                handle: '.drag-handle',
+                ghostClass: 'sortable-ghost',
+                chosenClass: 'sortable-chosen',
+                dragClass: 'sortable-drag',
 
-                new Sortable(el.querySelector('tbody'), {
-                    animation: 150,
-                    handle: '.drag-handle',
+                onEnd: function(evt) {
+                    updateJadwalPositions(kajianId, el)
+                }
+            })
+        })
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const sortableKajian = document.querySelector('.sortable-kajian');
+            if (sortableKajian) {
+                new Sortable(sortableKajian, {
+                    handle: '.drag-handle-kajian',
+                    draggable: '.kajian-row',
                     ghostClass: 'sortable-ghost',
                     chosenClass: 'sortable-chosen',
                     dragClass: 'sortable-drag',
-
+                    animation: 150,
                     onEnd: function(evt) {
-                        updateJadwalPositions(kajianId, el)
-                    }
-                })
-            })
+                        const kajianIds = Array.from(sortableKajian.children).map(row =>
+                            row.getAttribute('data-kajian-id')
+                        );
 
+                        fetch('/kajian/positions', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector(
+                                        'meta[name="csrf-token"]').getAttribute('content')
+                                },
+                                body: JSON.stringify({
+                                    kajian_ids: kajianIds
+                                })
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    console.log('Posisi kajian berhasil diupdate');
+                                }
+                            })
+                            .catch(error => console.error('Error:', error));
+                    }
+                });
+            }
         });
 
         function updateJadwalPositions(kajianId, container) {

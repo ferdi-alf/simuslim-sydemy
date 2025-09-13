@@ -19,7 +19,8 @@ class KajianPoster extends Model
         'penyelenggara',
         'alamat_manual',
         'link',
-        'is_draft'
+        'is_draft',
+        'position'
     ];
 
     protected $casts = [
@@ -60,5 +61,46 @@ class KajianPoster extends Model
     public function getCategoriesNamesAttribute()
     {
         return $this->categories->pluck('nama')->join(', ');
+    }
+
+    public function getHariTerdekatAttribute()
+    {
+        if ($this->jadwalKajians->isEmpty()) {
+            return null;
+        }
+
+        $today = now()->startOfDay();
+        
+        $jadwalMendatang = $this->jadwalKajians
+            ->filter(function($jadwal) use ($today) {
+                return \Carbon\Carbon::parse($jadwal->tanggal)->startOfDay()->gte($today);
+            })
+            ->sortBy('tanggal');
+        
+        if ($jadwalMendatang->isNotEmpty()) {
+            return $jadwalMendatang->first()->hari;
+        }
+        
+        return null;
+    }
+    public function getTanggalTerdekatAttribute()
+    {
+        if ($this->jadwalKajians->isEmpty()) {
+            return null;
+        }
+
+        $today = now()->startOfDay();
+        
+        $jadwalMendatang = $this->jadwalKajians
+            ->filter(function($jadwal) use ($today) {
+                return \Carbon\Carbon::parse($jadwal->tanggal)->startOfDay()->gte($today);
+            })
+            ->sortBy('tanggal');
+        
+        if ($jadwalMendatang->isNotEmpty()) {
+            return $jadwalMendatang->first()->tanggal;
+        }
+        
+        return null;
     }
 }
